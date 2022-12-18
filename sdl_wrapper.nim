@@ -1,9 +1,11 @@
 ## Local imports
+import globals
 
 ## Library imports
 import sdl2
 import sdl2/ttf
 import types
+import std/tables
 
 
 ### SDL Exceptions
@@ -16,13 +18,12 @@ template sdlFailIf*(condition: typed, reason: string) =
 
 
 ### Text Helper
-proc drawText*(renderer: RendererPtr, font: FontPtr, text: cstring,
-        color: Color, x: cint, y: cint) =
+proc drawText(font: FontPtr, text: cstring, color: Color, x: cint, y: cint) =
     if text.len == 0:
         return
     let
         surface = ttf.renderTextBlended(font, text, color)
-        texture = renderer.createTextureFromSurface(surface)
+        texture = G.renderer.createTextureFromSurface(surface)
 
     surface.freeSurface
     defer: texture.destroy
@@ -33,7 +34,12 @@ proc drawText*(renderer: RendererPtr, font: FontPtr, text: cstring,
         surface.w,
         surface.h
     )
-    renderer.copy texture, nil, addr r
+    G.renderer.copy texture, nil, addr r
+proc drawText*(font_size: cint, text: cstring, color: Color, x: cint, y: cint) =
+    if not G.fonts.hasKey(font_size):
+        G.fonts[font_size] = ttf.openFont("assets/Hack Regular Nerd Font Complete.ttf", font_size)
+        sdlFailIf G.fonts[font_size].isNil: "font could not be created"
+    drawText(G.fonts[font_size], text, color, x, y)
 
 
 ### Input Handling
