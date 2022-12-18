@@ -4,6 +4,7 @@ import sdl_wrapper
 
 ## Library imports
 import sdl2
+import std/strformat
 
 ### Drawing
 proc drawScreen*() =
@@ -19,7 +20,7 @@ proc drawScreen*() =
         G.width,
         30)
     G.renderer.fillRect(below_bar_rect)
-    drawText(16, cstring("FPS: " & $G.current_fps), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
+    drawText(16, cstring("FPS: " & fmt"{G.current_fps:>5.1f}"), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
 
     
     ## Show the result
