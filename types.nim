@@ -35,3 +35,17 @@ type Input* = object
         mod_alt*: bool
     of None:
         nil
+
+### Text Kind
+type TextKind* = enum
+    Todo
+    Spacing
+    Keyword
+    Type
+    Literal
+    Function
+    Punctuation
+
+type Texty* = ref object
+    text*: string
+    kind*: TextKind
