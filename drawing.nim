@@ -21,7 +21,7 @@ proc drawScreen*() =
         G.width,
         30)
     G.renderer.fillRect(below_bar_rect)
-    drawStandardSizeTextFast(cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), 200, G.height - 16 - (30 - 16) div 2)
+    drawStandardSizeTextFast(cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
     
     ## Optional search bar
     if G.search_active:
