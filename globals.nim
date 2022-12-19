@@ -20,6 +20,8 @@ type Globals* = object
 
     texties*: seq[Texty]
 
+    texture_atlas_standard_size*: TexturePtr
+
     fonts*: Table[cint, FontPtr]
 
 var G* = Globals(running: true, search_active: false, current_search_term: "bitches")

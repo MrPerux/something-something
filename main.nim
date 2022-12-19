@@ -62,6 +62,7 @@ proc main =
     sdlFailIf(not ttfInit()): "SDL_TTF initialization failed"
     defer: ttfQuit()
 
+    initTextureAtlasStandardSize()
     
     # Gameloop variables
     var

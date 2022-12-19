@@ -21,7 +21,7 @@ proc drawScreen*() =
         G.width,
         30)
     G.renderer.fillRect(below_bar_rect)
-    drawText(16, cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
+    drawStandardSizeTextFast(cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), 200, G.height - 16 - (30 - 16) div 2)
     
     ## Optional search bar
     if G.search_active:
@@ -40,6 +40,7 @@ proc drawScreen*() =
         x: cint = 0
         y: cint = 0
     for texty in G.texties:
+        ## Spacing/layout
         if texty.kind == Spacing:
             for c in texty.text:
                 case c
@@ -57,6 +58,7 @@ proc drawScreen*() =
                 else:
                     raiseAssert(fmt"Invalid spacing character '{c}'")
             continue
+        ## Colored Text
         let color =
             case texty.kind
             of Todo:
@@ -65,7 +67,7 @@ proc drawScreen*() =
                 color(255, 130, 160, 255)
             else:
                 color(255, 255, 255, 255)
-        drawText(cast[cint](16), cstring(texty.text), color, x, y)
+        drawStandardSizeTextFast(cstring(texty.text), color, x, y)
         x += 10 * cast[cint](texty.text.len)
 
     ## Show the result
