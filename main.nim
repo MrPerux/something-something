@@ -12,16 +12,7 @@ import sdl2/ttf
 
 ### Initialization and game loop
 proc main =
-    const MONITOR_WIDTH = if existsEnv("WSL_INTEROP"): 2560 else: 1920
-    const MONITOR_HEIGHT = if existsEnv("WSL_INTEROP"): 1440 else: 1053
-
-    let maximized_mode = fileExists("runtime/maximized_mode.option")
-    if maximized_mode:
-        G.width = MONITOR_WIDTH
-        G.height = MONITOR_HEIGHT
-    else:
-        G.width = 600
-        G.height = 400
+    setScreenDimensions(G.is_screen_maximized)
     G.window_title = "Gebruik de pijltjes"
 
     ## Setup
@@ -29,11 +20,11 @@ proc main =
         "SDL2 initialization failed"
     defer: sdl2.quit()
 
-    if maximized_mode:
+    if G.is_screen_maximized:
         G.window = createWindow(
             title = G.window_title,
             x = SDL_WINDOWPOS_CENTERED,
-            y = SDL_WINDOWPOS_CENTERED,
+            y = 0,
             w = G.width,
             h = G.height,
             flags = SDL_WINDOW_SHOWN or SDL_WINDOW_MAXIMIZED or SDL_WINDOW_BORDERLESS or SDL_WINDOW_RESIZABLE

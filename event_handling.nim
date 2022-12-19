@@ -13,6 +13,12 @@ proc onInput(input: Input) =
     of InputKind.Keydown:
         echo $input
         
+        ## F11 -> Toggle Fullscreen
+        if input.scancode == Scancode.SDL_SCANCODE_F11:
+            G.is_screen_maximized = not G.is_screen_maximized
+            setScreenDimensions(G.is_screen_maximized)
+            updateWindowDimensions(G.is_screen_maximized)
+
         ## Ctrl C -> Quit
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_C:
             G.running = false
@@ -87,5 +93,9 @@ proc handleEvent*(event: Event) =
     of EventType.MouseButtonDown:
         echo "Click!"
 
+    of EventType.WindowEvent:
+        echo $event.evWindow.event
+
     else:
+        echo $event.kind
         discard

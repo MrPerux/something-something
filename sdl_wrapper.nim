@@ -6,7 +6,7 @@ import sdl2
 import sdl2/ttf
 import types
 import std/tables
-
+import os
 
 ### SDL Exceptions
 type SDLException = object of Defect
@@ -15,6 +15,28 @@ template sdlFailIf*(condition: typed, reason: string) =
     if condition: raise SDLException.newException(
         reason & ", SDL error " & $getError()
     )
+template sdlAssertSuccess*(condition: typed) =
+    if condition != SdlSuccess: raise SDLException.newException("SDL error " & $getError())
+
+
+### Fullscreen toggler
+proc setScreenDimensions*(maximized_mode: bool) =
+    const MONITOR_WIDTH = if existsEnv("WSL_INTEROP"): 2560 else: 1920
+    const MONITOR_HEIGHT = if existsEnv("WSL_INTEROP"): 1440 else: 1053
+
+    if maximized_mode:
+        G.width = MONITOR_WIDTH
+        G.height = MONITOR_HEIGHT
+    else:
+        G.width = 600
+        G.height = 400
+
+proc updateWindowDimensions*(maximized_mode: bool) =
+    G.window.setSize(G.width, G.height)
+    G.window.setPosition(SDL_WINDOWPOS_CENTERED, 0)
+    # if maximized_mode:
+    #     maximizeWindow(G.window)
+    G.window.raiseWindow
 
 
 ### Text Helper
@@ -87,6 +109,9 @@ proc drawStandardSizeTextFast*(text: cstring, color: Color, x: cint, y: cint) =
         glyph_height = 20
     var current_x = x
     for c in text:
+        if c <= ' ' or cast[cint](c) >= 127:
+            current_x += glyph_width
+            continue
         var source_rect = rect(cast[cint](c) * glyph_width, 0, glyph_width, glyph_height)
         var destination_rect = rect(current_x, y, glyph_width, glyph_height)
         G.renderer.copy(G.texture_atlas_standard_size, addr source_rect, addr destination_rect)

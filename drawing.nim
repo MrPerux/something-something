@@ -13,27 +13,6 @@ proc drawScreen*() =
     G.renderer.setDrawColor 8, 21, 27, 255 # dark cyan
     G.renderer.clear()
 
-    ## Bottom bar
-    G.renderer.setDrawColor(140, 140, 240, 255) # Light magenta
-    var below_bar_rect = rect(
-        0,
-        G.height - 30,
-        G.width,
-        30)
-    G.renderer.fillRect(below_bar_rect)
-    drawStandardSizeTextFast(cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
-    
-    ## Optional search bar
-    if G.search_active:
-        G.renderer.setDrawColor(28, 41, 47, 255) # Lighter cyan than background
-        var search_bar = rect(
-            G.width div 2,
-            0,
-            G.width - (G.width div 2),
-            30)
-        G.renderer.fillRect(search_bar)
-        drawText(16, cstring(fmt"Search: '{G.current_search_term}'"), color(255, 255, 255, 255), G.width div 2 + ((30 - 16) div 2), (30 - 16) div 2)
-
     ## Texties
     var
         x_left: cint = 0
@@ -69,6 +48,27 @@ proc drawScreen*() =
                 color(255, 255, 255, 255)
         drawStandardSizeTextFast(cstring(texty.text), color, x, y)
         x += 10 * cast[cint](texty.text.len)
+
+    ## Bottom bar
+    G.renderer.setDrawColor(140, 140, 240, 255) # Light magenta
+    var below_bar_rect = rect(
+        0,
+        G.height - 30,
+        G.width,
+        30)
+    G.renderer.fillRect(below_bar_rect)
+    drawStandardSizeTextFast(cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
+    
+    ## Optional search bar
+    if G.search_active:
+        G.renderer.setDrawColor(28, 41, 47, 255) # Lighter cyan than background
+        var search_bar = rect(
+            G.width div 2,
+            0,
+            G.width - (G.width div 2),
+            30)
+        G.renderer.fillRect(search_bar)
+        drawText(16, cstring(fmt"Search: '{G.current_search_term}'"), color(255, 255, 255, 255), G.width div 2 + ((30 - 16) div 2), (30 - 16) div 2)
 
     ## Show the result
     G.renderer.present()
