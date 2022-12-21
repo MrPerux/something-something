@@ -6,6 +6,7 @@ import sdl_wrapper
 ## Library imports
 import sdl2
 
+{.experimental: "codeReordering".}
 
 ### Handle events
 proc onInput(input: Input) =
@@ -26,54 +27,57 @@ proc onInput(input: Input) =
 
         ## Ctrl F -> Toggle Find
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_F:
-            G.search_active = not G.search_active
+            if G.focus_mode == FocusMode.Search:
+                discard G.focus_stack.pop()
+            else:
+                G.focus_stack.add(FocusMode.Search)
 
-        ## Typing in search box
-        if G.search_active:
-            if input.is_ascii:
-                G.current_search_term.add(input.character)
-            elif input.scancode == SDL_SCANCODE_BACKSPACE:
-                if G.current_search_term.len >= 1:
-                    G.current_search_term = G.current_search_term[0 ..< ^1]
+        ## Ctrl N -> Pop up Creation Window
+        if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_N:
+            if G.focus_mode == FocusMode.CreationWindow:
+                discard G.focus_stack.pop()
+            else:
+                G.focus_stack.add(FocusMode.CreationWindow)
+            
 
-        ## Texty typing
-        if not G.search_active:
-            if G.texties.len == 0 and input.is_ascii:
-                G.texties.add(Texty(text: $input.character, kind: Todo))
-            elif G.texties.len > 0:
-                var current_texty = G.texties[^1]
-                case current_texty.kind
-                of Todo:
-                    if input.is_ascii:
-                        current_texty.text.add($input.character)
-                    elif input.scancode == SDL_SCANCODE_BACKSPACE:
-                        if current_texty.text.len >= 1:
-                            current_texty.text = current_texty.text[0 ..< ^1]
-                    case current_texty.text
-                    of "if":
-                        discard G.texties.pop()
-                        G.texties.add(Texty(text: "if", kind: Keyword))
-                        G.texties.add(Texty(text: " ", kind: Spacing))
-                        G.texties.add(Texty(text: "what", kind: Todo))
-                        G.texties.add(Texty(text: " ", kind: Spacing))
-                        G.texties.add(Texty(text: "then", kind: Keyword))
-                        G.texties.add(Texty(text: " ", kind: Spacing))
-                        G.texties.add(Texty(text: "", kind: Todo))
-                    of "proc":
-                        discard G.texties.pop()
-                        G.texties.add(Texty(text: "proc", kind: Keyword))
-                        G.texties.add(Texty(text: " ", kind: Spacing))
-                        G.texties.add(Texty(text: "what", kind: Todo))
-                        G.texties.add(Texty(text: "() -> ", kind: Punctuation))
-                        G.texties.add(Texty(text: "type", kind: Todo))
-                        G.texties.add(Texty(text: " =", kind: Punctuation))
-                        G.texties.add(Texty(text: "\t\n", kind: Spacing))
-                        G.texties.add(Texty(text: "", kind: Todo))
-                    else:
-                        discard
+        ## Typing
+        if (G.focus_mode == FocusMode.Search or G.focus_mode == FocusMode.Text or G.focus_mode == FocusMode.CreationWindow) and input.is_displayable:
+            var discard_character = false
+            if G.focus_mode == FocusMode.Text and input.character == ' ':
+                case G.current_text
+                of "if":
+                    discard G.texties.pop()
+                    G.texties.add(Texty(text: "if", kind: Keyword))
+                    G.texties.add(Texty(text: " ", kind: Spacing))
+                    G.texties.add(Texty(text: "what", kind: Todo))
+                    G.texties.add(Texty(text: " ", kind: Spacing))
+                    G.texties.add(Texty(text: "then", kind: Keyword))
+                    G.texties.add(Texty(text: " ", kind: Spacing))
+                    G.texties.add(Texty(text: "", kind: Todo))
+                    discard_character = true
+                of "proc":
+                    discard G.texties.pop()
+                    G.texties.add(Texty(text: "proc", kind: Keyword))
+                    G.texties.add(Texty(text: " ", kind: Spacing))
+                    G.texties.add(Texty(text: "what", kind: Todo))
+                    G.texties.add(Texty(text: "() -> ", kind: Punctuation))
+                    G.texties.add(Texty(text: "type", kind: Todo))
+                    G.texties.add(Texty(text: " =", kind: Punctuation))
+                    G.texties.add(Texty(text: "\t\n", kind: Spacing))
+                    G.texties.add(Texty(text: "", kind: Todo))
+                    discard_character = true
                 else:
-                    echo "How are we typing on a nontypable field!?"
-                    quit(1)
+                    discard
+            if not discard_character:
+                onTextChange(G.current_text & $input.character)
+
+        elif input.scancode == SDL_SCANCODE_BACKSPACE:
+            if G.current_text.len >= 1:
+                onTextChange(G.current_text[0 ..< ^1])
+
+        elif input.scancode == SDL_SCANCODE_RETURN:
+            G.texties.add(Texty(text: "\n", kind: Spacing))
+            G.texties.add(Texty(text: "", kind: Todo))
 
     of None:
         discard
@@ -99,3 +103,14 @@ proc handleEvent*(event: Event) =
     else:
         echo $event.kind
         discard
+
+
+### Text events
+proc onTextChange*(new_text: string) =
+    case G.focus_mode
+    of FocusMode.Search:
+        G.current_search_term = new_text
+    of FocusMode.Text:
+        G.texties[^1].text = new_text
+    of FocusMode.CreationWindow:
+        G.creation_window_search = new_text

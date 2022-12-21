@@ -20,9 +20,14 @@ type Globals* = object
     ## Is screen maximized
     is_screen_maximized*: bool
 
+    ## Current focus
+    focus_stack*: seq[FocusMode]
+
     ## Search bar
-    search_active*: bool
     current_search_term*: string
+
+    ## Creation window
+    creation_window_search*: string
 
     ## Texties
     texties*: seq[Texty]
@@ -31,35 +36,48 @@ type Globals* = object
     texture_atlas_standard_size*: TexturePtr
     fonts*: Table[cint, FontPtr]
 
-var G* = Globals(running: true, is_screen_maximized: fileExists("runtime/maximized_mode.option"), search_active: false, current_search_term: "bitches")
+var G* = Globals(running: true, is_screen_maximized: fileExists("runtime/maximized_mode.option"), focus_stack: @[FocusMode.Text], current_search_term: "poodles")
 
-for i in 1..12:
-    for word in @["width", "height", "window", "fps", "is_prime", "where_are_my_cats", "texties"]:
-        for j in 1..5:
-            G.texties.add(Texty(text: "proc", kind: Keyword))
-            G.texties.add(Texty(text: " ", kind: Spacing))
-            G.texties.add(Texty(text: word, kind: Todo))
+func focus_mode*(g: Globals): FocusMode =
+    g.focus_stack[^1]
+func current_text*(g: Globals): string =
+    case g.focus_mode:
+    of FocusMode.Search:
+        g.current_search_term
+    of FocusMode.Text:
+        g.texties[^1].text
+    of FocusMode.CreationWindow:
+        g.creation_window_search
+    # else:
+    #     ""
 
-            G.texties.add(Texty(text: "(", kind: Punctuation))
-            G.texties.add(Texty(text: "int", kind: Keyword))
-            G.texties.add(Texty(text: ",", kind: Punctuation))
-            G.texties.add(Texty(text: " ", kind: Spacing))
+# for i in 1..12:
+#     for word in @["width", "height", "window", "fps", "is_prime", "where_are_my_cats", "texties"]:
+#         for j in 1..5:
+#             G.texties.add(Texty(text: "proc", kind: Keyword))
+#             G.texties.add(Texty(text: " ", kind: Spacing))
+#             G.texties.add(Texty(text: word, kind: Todo))
+
+#             G.texties.add(Texty(text: "(", kind: Punctuation))
+#             G.texties.add(Texty(text: "int", kind: Keyword))
+#             G.texties.add(Texty(text: ",", kind: Punctuation))
+#             G.texties.add(Texty(text: " ", kind: Spacing))
             
-            G.texties.add(Texty(text: "float", kind: Keyword))
-            G.texties.add(Texty(text: ",", kind: Punctuation))
-            G.texties.add(Texty(text: " ", kind: Spacing))
+#             G.texties.add(Texty(text: "float", kind: Keyword))
+#             G.texties.add(Texty(text: ",", kind: Punctuation))
+#             G.texties.add(Texty(text: " ", kind: Spacing))
             
-            G.texties.add(Texty(text: "double", kind: Keyword))
-            G.texties.add(Texty(text: ")", kind: Punctuation))
-            G.texties.add(Texty(text: " ", kind: Spacing))
+#             G.texties.add(Texty(text: "double", kind: Keyword))
+#             G.texties.add(Texty(text: ")", kind: Punctuation))
+#             G.texties.add(Texty(text: " ", kind: Spacing))
 
-            G.texties.add(Texty(text: "->", kind: Punctuation))
-            G.texties.add(Texty(text: " ", kind: Spacing))
+#             G.texties.add(Texty(text: "->", kind: Punctuation))
+#             G.texties.add(Texty(text: " ", kind: Spacing))
 
-            G.texties.add(Texty(text: "type", kind: Todo))
-            G.texties.add(Texty(text: " =", kind: Punctuation))
-            G.texties.add(Texty(text: " ", kind: Spacing))
+#             G.texties.add(Texty(text: "type", kind: Todo))
+#             G.texties.add(Texty(text: " =", kind: Punctuation))
+#             G.texties.add(Texty(text: " ", kind: Spacing))
 
-        G.texties.add(Texty(text: "\n", kind: Spacing))
+#         G.texties.add(Texty(text: "\n", kind: Spacing))
 
 G.texties.add(Texty(text: "", kind: Todo))

@@ -118,6 +118,27 @@ proc drawStandardSizeTextFast*(text: cstring, color: Color, x: cint, y: cint) =
         current_x += glyph_width
 
 
+## Drawing helper procedures
+func padded*(rect: Rect, padding: cint): Rect =
+    rect(rect[0] - padding, rect[1] - padding, rect[2] + 2 * padding, rect[3] + 2 * padding)
+
+proc fillPaddedRoundedRect*(dstrect: Rect) =
+    ## Rectangles
+    const padding = 2
+    var horizontal = rect(dstrect[0] - padding, dstrect[1], dstrect[2] + 2 * padding, dstrect[3])
+    G.renderer.fillRect(addr horizontal)
+    var top = rect(dstrect[0], dstrect[1] - padding, dstrect[2], padding)
+    G.renderer.fillRect(addr top)
+    var bottom = rect(dstrect[0], dstrect[1] + dstrect[3], dstrect[2], padding)
+    G.renderer.fillRect(addr bottom)
+    
+    ## Corners
+    G.renderer.drawPoint(         dstrect[0] - 1,          dstrect[1] - 1)
+    G.renderer.drawPoint(dstrect[0] + dstrect[2],          dstrect[1] - 1)
+    G.renderer.drawPoint(         dstrect[0] - 1, dstrect[1] + dstrect[3])
+    G.renderer.drawPoint(dstrect[0] + dstrect[2], dstrect[1] + dstrect[3])
+
+
 ### Input Handling
 const
     MOD_SHIFT = KMOD_LSHIFT or KMOD_RSHIFT
@@ -131,12 +152,12 @@ func isDisplayableAsciiCharacterMap(): array[0..127, bool] =
 func toInput*(c: char, mod_state: Keymod): Input =
     const table = isDisplayableAsciiCharacterMap()
     if cast[cint](c) in 0..127 and table[cast[cint](c)]:
-        Input(kind: InputKind.Keydown, is_ascii: true, character: c, scancode: cast[Scancode](0), mod_shift: bool(mod_state and
+        Input(kind: InputKind.Keydown, is_displayable: true, character: c, scancode: cast[Scancode](0), mod_shift: bool(mod_state and
                 MOD_SHIFT), mod_ctrl: bool(mod_state and MOD_CTRL), mod_alt: bool(mod_state and MOD_ALT))
     else:
         Input(kind: None)
 
 func toInput*(key: Scancode, mod_state: Keymod): Input =
-    Input(kind: InputKind.Keydown, is_ascii: false, character: cast[char](0), scancode: key, mod_shift: bool(mod_state and
+    Input(kind: InputKind.Keydown, is_displayable: false, character: cast[char](0), scancode: key, mod_shift: bool(mod_state and
             MOD_SHIFT), mod_ctrl: bool(mod_state and MOD_CTRL), mod_alt: bool(mod_state and MOD_ALT))
 

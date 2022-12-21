@@ -27,7 +27,7 @@ type InputKind* = enum
 type Input* = object
     case kind*: InputKind:
     of Keydown:
-        is_ascii*: bool
+        is_displayable*: bool
         character*: char
         scancode*: Scancode
         mod_shift*: bool
@@ -35,6 +35,7 @@ type Input* = object
         mod_alt*: bool
     of None:
         nil
+
 
 ### Text Kind
 type TextKind* = enum
@@ -49,3 +50,10 @@ type TextKind* = enum
 type Texty* = ref object
     text*: string
     kind*: TextKind
+
+
+### Focus
+type FocusMode* = enum
+    Text
+    Search
+    CreationWindow
