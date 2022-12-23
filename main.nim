@@ -5,7 +5,6 @@ import drawing
 import event_handling
 
 ## Library imports
-import os
 import math
 import sdl2
 import sdl2/ttf

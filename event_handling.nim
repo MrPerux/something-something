@@ -72,11 +72,11 @@ proc onInput(input: Input) =
                 case G.current_text
                 of "if":
                     discard G.texty_lines[^1].texties.pop()
-                    addIfStatement()
+                    addIfStatementAndSwitch()
                     discard_character = true
                 of "proc":
                     discard G.texty_lines[^1].texties.pop()
-                    addTodoProcedure()
+                    addTodoProcedureAndSwitch()
                     discard_character = true
                 else:
                     discard
@@ -90,20 +90,24 @@ proc onInput(input: Input) =
         elif input.scancode == SDL_SCANCODE_RETURN:
             case G.focus_mode
             of FocusMode.Text:
+                switchTypingAwayFromCurrentTexty()
                 G.texty_lines[^1].texties.add(Texty(text: "\n", kind: Spacing))
-                G.texty_lines[^1].texties.add(Texty(text: "", kind: Todo))
+                G.texty_lines[^1].texties.add(Texty(text: "", kind: CurrentlyTyping, currently_typing_kind: Unparsed))
             of FocusMode.CreationWindow:
                 var should_clear_search_text_and_close_window = false
                 let creation_option = G.creation_window_selection_options[G.creation_window_selection_index]
                 case creation_option.text
                 of "proc":
-                    addTodoProcedure()
+                    switchTypingAwayFromCurrentTexty()
+                    addTodoProcedureAndSwitch()
                     should_clear_search_text_and_close_window = true
                 of "if then":
-                    addIfStatement()
+                    switchTypingAwayFromCurrentTexty()
+                    addIfStatementAndSwitch()
                     should_clear_search_text_and_close_window = true
                 of "comment (#)":
-                    addComment()
+                    switchTypingAwayFromCurrentTexty()
+                    addCommentAndSwitch()
                     should_clear_search_text_and_close_window = true
                 else:
                     discard

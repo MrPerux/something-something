@@ -46,19 +46,22 @@ proc drawScreen*() =
                         raiseAssert(fmt"Invalid spacing character '{c}'")
                 continue
             ## Colored Text
+            let kind_to_color = if texty.kind == CurrentlyTyping: texty.currently_typing_kind else: texty.kind
             let color =
-                case texty.kind
+                case kind_to_color
                 of Todo:
-                    color(130, 255, 160, 255)
+                    color(120, 120, 120, 255)
+                of Unparsed:
+                    color(235, 180, 210, 255)
                 of Keyword:
                     color(255, 130, 160, 255)
                 else:
                     color(255, 255, 255, 255)
             drawStandardSizeTextFast(cstring(texty.text), color, x, y)
             x += 10 * cast[cint](texty.text.len)
-        if idx == G.texty_lines.len - 1:
-            G.renderer.setDrawColor(200, 200, 200, 255)
-            G.renderer.drawLine(x, y, x, y + 20)
+            if texty.kind == CurrentlyTyping:
+                G.renderer.setDrawColor(200, 200, 200, 255)
+                G.renderer.drawLine(x, y, x, y + 20)
             
         ## New line
         y += 16

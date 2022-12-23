@@ -60,4 +60,4 @@ func current_text*(g: Globals): string =
     of FocusMode.GotoWindow:
         g.goto_window_search
 
-G.texty_lines.add(initNamedTextyLine("yeah", @[Texty(text: "", kind: Todo)]))
+G.texty_lines.add(initNamedTextyLine("yeah", @[Texty(text: "", kind: CurrentlyTyping, currently_typing_kind: Unparsed)]))

@@ -40,18 +40,25 @@ type Input* = object
 
 ### Text Kind
 type TextKind* = enum
+    CurrentlyTyping
     Todo
+    Unparsed # TODO: Parse stuff and remove this :)
     Spacing
     Keyword
     Type
     Literal
-    Function
     Punctuation
 
 
 type Texty* = ref object
     text*: string
-    kind*: TextKind
+    case kind*: TextKind
+    of CurrentlyTyping:
+        currently_typing_kind*: TextKind
+    of Todo:
+        todo_kind*: TextKind
+    else: 
+        discard
 
 func `$`*(x: Texty): string =
     fmt"<{x.kind}:{x.text}>"
