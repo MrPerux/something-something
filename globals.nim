@@ -7,6 +7,8 @@ import sdl2
 import sdl2/ttf
 import std/tables
 
+{.experimental: "codeReordering".}
+
 type Globals* = object
     ## Window properties
     running*: bool
@@ -54,10 +56,17 @@ func current_text*(g: Globals): string =
     of FocusMode.Search:
         g.current_search_term
     of FocusMode.Text:
-        g.texty_lines[^1].texties[^1].text
+        g.current_texty.text
     of FocusMode.CreationWindow:
         g.creation_window_search
     of FocusMode.GotoWindow:
         g.goto_window_search
+func current_texty*(g: Globals): Texty =
+    g.texty_lines[^1].texties[^1]
 
+let global_epd = initEditableProcedureDefinition(
+    initEditableUnparsed("proc1"),
+    initEditableParameters(@[initEditableUnparsed("param1"), initEditableUnparsed("param2")]),
+    initEditableBody(@[cast[Editable](initEditableUnparsed("let's go bitches"))]))
+G.texty_lines.add(initNamedTextyLine(global_epd.name.value, global_epd.textyIterator()))
 G.texty_lines.add(initNamedTextyLine("yeah", @[Texty(text: "", kind: CurrentlyTyping, currently_typing_kind: Unparsed)]))

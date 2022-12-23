@@ -4,7 +4,7 @@
 import sdl2
 import std/strformat
 
-{.experimental: "codeReordering".}
+# {.experimental: "codeReordering".}
 
 ### 2D position object
 type Pos* = object
@@ -81,3 +81,86 @@ type FocusMode* = enum
     Search
     CreationWindow
     GotoWindow
+
+
+### Editable Code
+type Editable* = ref object of RootObj
+    is_selected*: bool
+    parent*: Editable
+
+method textyIterator*(x: Editable): seq[Texty] {.base.} = discard
+
+## Unparsed
+type EditableUnparsed* = ref object of Editable
+    value*: string
+
+method textyIterator*(x: EditableUnparsed): seq[Texty] =
+    if x.is_selected:
+        result.add(Texty(text: x.value, kind: CurrentlyTyping, currently_typing_kind: Unparsed))
+    else:
+        result.add(Texty(text: x.value, kind: Unparsed))
+
+proc initEditableUnparsed*(value: string): EditableUnparsed =
+    result = EditableUnparsed(value: value)
+
+## Parameters
+type EditableParameters* = ref object of Editable
+    parameters_unparsed*: seq[EditableUnparsed] # TODO: Turn into optionally typed identifiers
+
+method textyIterator*(x: EditableParameters): seq[Texty] =
+    result.add(Texty(text: "(", kind: Punctuation))
+    var is_first = true
+    for value in x.parameters_unparsed:
+        if not is_first:
+            result.add(Texty(text: ", ", kind: Punctuation))
+        for t in textyIterator(value):
+            result.add(t)
+        is_first = false
+    result.add(Texty(text: ")", kind: Punctuation))
+
+proc initEditableParameters*(parameters_unparsed: seq[EditableUnparsed]): EditableParameters =
+    result = EditableParameters(parameters_unparsed: parameters_unparsed)
+    for value in parameters_unparsed:
+        value.parent = result
+
+
+## Body
+type EditableBody* = ref object of Editable
+    lines*: seq[Editable]
+
+method textyIterator*(x: EditableBody): seq[Texty] =
+    result.add(Texty(text: "\t\n", kind: Spacing))
+    for value in x.lines:
+        for t in textyIterator(value):
+            result.add(t)
+        result.add(Texty(text: "\n", kind: Spacing))
+    result.add(Texty(text: "\r", kind: Spacing))
+
+proc initEditableBody*(lines: seq[Editable]): EditableBody =
+    result = EditableBody(lines: lines)
+    for value in lines:
+        value.parent = result
+
+## Procedure Definition
+type EditableProcedureDefinition* = ref object of Editable
+    name*: EditableUnparsed # TODO: Turn into an editable identifier
+    parameters*: EditableParameters
+    body*: EditableBody
+
+method textyIterator*(x: EditableProcedureDefinition): seq[Texty] =
+    result.add(Texty(text: "proc", kind: Keyword))
+    result.add(Texty(text: " ", kind: Spacing))
+    for t in textyIterator(x.name):
+        result.add(t)
+    for t in textyIterator(x.parameters):
+        result.add(t)
+    result.add(Texty(text: " ", kind: Spacing))
+    result.add(Texty(text: "=", kind: Punctuation))
+    for t in textyIterator(x.body):
+        result.add(t)
+
+proc initEditableProcedureDefinition*(name: EditableUnparsed, parameters: EditableParameters, body: EditableBody): EditableProcedureDefinition =
+    result = EditableProcedureDefinition(name: name, parameters: parameters, body: body)
+    name.parent = result
+    parameters.parent = result
+    body.parent = result

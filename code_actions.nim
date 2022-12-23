@@ -34,5 +34,5 @@ proc addCommentAndSwitch*() =
 
 ### Texty actions
 proc switchTypingAwayFromCurrentTexty*() =
-    G.texty_lines[^1].texties[^1] = Texty(text: G.texty_lines[^1].texties[^1].text, kind: G.texty_lines[^1].texties[^1].currently_typing_kind)
+    G.texty_lines[^1].texties[^1] = Texty(text: G.current_texty.text, kind: G.current_texty.currently_typing_kind)
 
