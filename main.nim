@@ -65,6 +65,9 @@ proc main =
         frame_counter: cint
         last_frame_times: seq[float32]
 
+    ## Enable text input
+    startTextInput() #TODO: It also works without, apostrophe's are a pain to type though.
+
     ## Game loop
     while G.running:
         ## Time delta calculation

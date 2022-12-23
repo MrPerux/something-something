@@ -16,6 +16,7 @@ type Globals* = object
     window_title*: cstring
     renderer*: RendererPtr
     current_fps*: float
+    was_typing_apostrophe_like_character*: char
     
     ## Is screen maximized
     is_screen_maximized*: bool
@@ -28,9 +29,17 @@ type Globals* = object
 
     ## Creation window
     creation_window_search*: string
+    creation_window_selection_index*: cint
+    creation_window_selection_options*: seq[Texty]
+
+    ## Goto window
+    goto_window_search*: string
+    goto_window_selection_index*: cint
+    goto_window_selection_options*: seq[Texty]
 
     ## Texties
-    texties*: seq[Texty]
+    show_texty_line_names*: bool
+    texty_lines*: seq[NamedTextyLine]
 
     ## Fonts
     texture_atlas_standard_size*: TexturePtr
@@ -45,39 +54,10 @@ func current_text*(g: Globals): string =
     of FocusMode.Search:
         g.current_search_term
     of FocusMode.Text:
-        g.texties[^1].text
+        g.texty_lines[^1].texties[^1].text
     of FocusMode.CreationWindow:
         g.creation_window_search
-    # else:
-    #     ""
+    of FocusMode.GotoWindow:
+        g.goto_window_search
 
-# for i in 1..12:
-#     for word in @["width", "height", "window", "fps", "is_prime", "where_are_my_cats", "texties"]:
-#         for j in 1..5:
-#             G.texties.add(Texty(text: "proc", kind: Keyword))
-#             G.texties.add(Texty(text: " ", kind: Spacing))
-#             G.texties.add(Texty(text: word, kind: Todo))
-
-#             G.texties.add(Texty(text: "(", kind: Punctuation))
-#             G.texties.add(Texty(text: "int", kind: Keyword))
-#             G.texties.add(Texty(text: ",", kind: Punctuation))
-#             G.texties.add(Texty(text: " ", kind: Spacing))
-            
-#             G.texties.add(Texty(text: "float", kind: Keyword))
-#             G.texties.add(Texty(text: ",", kind: Punctuation))
-#             G.texties.add(Texty(text: " ", kind: Spacing))
-            
-#             G.texties.add(Texty(text: "double", kind: Keyword))
-#             G.texties.add(Texty(text: ")", kind: Punctuation))
-#             G.texties.add(Texty(text: " ", kind: Spacing))
-
-#             G.texties.add(Texty(text: "->", kind: Punctuation))
-#             G.texties.add(Texty(text: " ", kind: Spacing))
-
-#             G.texties.add(Texty(text: "type", kind: Todo))
-#             G.texties.add(Texty(text: " =", kind: Punctuation))
-#             G.texties.add(Texty(text: " ", kind: Spacing))
-
-#         G.texties.add(Texty(text: "\n", kind: Spacing))
-
-G.texties.add(Texty(text: "", kind: Todo))
+G.texty_lines.add(initNamedTextyLine("yeah", @[Texty(text: "", kind: Todo)]))

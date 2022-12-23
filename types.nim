@@ -2,6 +2,7 @@
 
 ## Library imports
 import sdl2
+import std/strformat
 
 {.experimental: "codeReordering".}
 
@@ -47,9 +48,24 @@ type TextKind* = enum
     Function
     Punctuation
 
+
 type Texty* = ref object
     text*: string
     kind*: TextKind
+
+func `$`*(x: Texty): string =
+    fmt"<{x.kind}:{x.text}>"
+
+
+type NamedTextyLine* = object
+    name*: string
+    texties*: seq[Texty]
+
+func initNamedTextyLine*(name: string, texties: seq[Texty]): NamedTextyLine =
+    NamedTextyLine(name: name, texties: texties)
+
+func `$`*(x: NamedTextyLine): string =
+    fmt"({x.name}:{x.texties})"
 
 
 ### Focus
@@ -57,3 +73,4 @@ type FocusMode* = enum
     Text
     Search
     CreationWindow
+    GotoWindow

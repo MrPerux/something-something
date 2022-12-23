@@ -152,7 +152,7 @@ func isDisplayableAsciiCharacterMap(): array[0..127, bool] =
 func toInput*(c: char, mod_state: Keymod): Input =
     const table = isDisplayableAsciiCharacterMap()
     if cast[cint](c) in 0..127 and table[cast[cint](c)]:
-        Input(kind: InputKind.Keydown, is_displayable: true, character: c, scancode: cast[Scancode](0), mod_shift: bool(mod_state and
+        Input(kind: InputKind.Keydown, is_displayable: not bool(mod_state and MOD_ALT), character: c, scancode: cast[Scancode](0), mod_shift: bool(mod_state and
                 MOD_SHIFT), mod_ctrl: bool(mod_state and MOD_CTRL), mod_alt: bool(mod_state and MOD_ALT))
     else:
         Input(kind: None)
