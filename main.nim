@@ -3,11 +3,15 @@ import globals
 import sdl_wrapper
 import drawing
 import event_handling
+import code_actions
 
 ## Library imports
 import math
 import sdl2
 import sdl2/ttf
+
+### Initialize G
+addTodoProcedureAndSwitch()
 
 ### Initialization and game loop
 proc main =

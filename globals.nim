@@ -6,6 +6,7 @@ import os
 import sdl2
 import sdl2/ttf
 import std/tables
+import std/options
 
 {.experimental: "codeReordering".}
 
@@ -42,6 +43,7 @@ type Globals* = object
     ## Texties
     show_texty_line_names*: bool
     texty_lines*: seq[NamedTextyLine]
+    optionally_selected_editable*: Option[Editable]
 
     ## Fonts
     texture_atlas_standard_size*: TexturePtr
@@ -56,17 +58,12 @@ func current_text*(g: Globals): string =
     of FocusMode.Search:
         g.current_search_term
     of FocusMode.Text:
-        g.current_texty.text
+        if g.optionally_selected_editable.isSome and g.optionally_selected_editable.get() of EditableUnparsed:
+            var editable_unparsed = cast[EditableUnparsed](g.optionally_selected_editable.get())
+            editable_unparsed.value
+        else:
+            "" # TODO: Shouldn't be getting shit atm
     of FocusMode.CreationWindow:
         g.creation_window_search
     of FocusMode.GotoWindow:
         g.goto_window_search
-func current_texty*(g: Globals): Texty =
-    g.texty_lines[^1].texties[^1]
-
-let global_epd = initEditableProcedureDefinition(
-    initEditableUnparsed("proc1"),
-    initEditableParameters(@[initEditableUnparsed("param1"), initEditableUnparsed("param2")]),
-    initEditableBody(@[cast[Editable](initEditableUnparsed("let's go bitches"))]))
-G.texty_lines.add(initNamedTextyLine(global_epd.name.value, global_epd.textyIterator()))
-G.texty_lines.add(initNamedTextyLine("yeah", @[Texty(text: "", kind: CurrentlyTyping, currently_typing_kind: Unparsed)]))

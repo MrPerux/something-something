@@ -8,6 +8,7 @@ import code_actions
 ## Library imports
 import sdl2
 import std/strformat
+import std/options
 
 {.experimental: "codeReordering".}
 
@@ -68,18 +69,18 @@ proc onInput(input: Input) =
         ## Typing
         if input.is_displayable:
             var discard_character = false
-            if G.focus_mode == FocusMode.Text and input.character == ' ':
-                case G.current_text
-                of "if":
-                    discard G.texty_lines[^1].texties.pop()
-                    addIfStatementAndSwitch()
-                    discard_character = true
-                of "proc":
-                    discard G.texty_lines[^1].texties.pop()
-                    addTodoProcedureAndSwitch()
-                    discard_character = true
-                else:
-                    discard
+            # if G.focus_mode == FocusMode.Text and input.character == ' ':
+            #     case G.current_text
+            #     of "if":
+            #         discard G.texty_lines[^1].texties.pop()
+            #         addIfStatementAndSwitch()
+            #         discard_character = true
+            #     of "proc":
+            #         discard G.texty_lines[^1].texties.pop()
+            #         addTodoProcedureAndSwitch()
+            #         discard_character = true
+            #     else:
+            #         discard
             if not discard_character:
                 onTextChange(G.current_text & $input.character)
 
@@ -90,23 +91,18 @@ proc onInput(input: Input) =
         elif input.scancode == SDL_SCANCODE_RETURN:
             case G.focus_mode
             of FocusMode.Text:
-                switchTypingAwayFromCurrentTexty()
-                G.texty_lines[^1].texties.add(Texty(text: "\n", kind: Spacing))
-                G.texty_lines[^1].texties.add(Texty(text: "", kind: CurrentlyTyping, currently_typing_kind: Unparsed))
+                discard # TODO
             of FocusMode.CreationWindow:
                 var should_clear_search_text_and_close_window = false
                 let creation_option = G.creation_window_selection_options[G.creation_window_selection_index]
                 case creation_option.text
                 of "proc":
-                    switchTypingAwayFromCurrentTexty()
                     addTodoProcedureAndSwitch()
                     should_clear_search_text_and_close_window = true
                 of "if then":
-                    switchTypingAwayFromCurrentTexty()
                     addIfStatementAndSwitch()
                     should_clear_search_text_and_close_window = true
                 of "comment (#)":
-                    switchTypingAwayFromCurrentTexty()
                     addCommentAndSwitch()
                     should_clear_search_text_and_close_window = true
                 else:
@@ -154,7 +150,9 @@ proc onTextChange*(new_text: string) =
     of FocusMode.Search:
         G.current_search_term = new_text
     of FocusMode.Text:
-        G.texty_lines[^1].texties[^1].text = new_text
+        if G.optionally_selected_editable.isSome and G.optionally_selected_editable.get() of EditableUnparsed:
+            var editable_unparsed = cast[EditableUnparsed](G.optionally_selected_editable.get())
+            editable_unparsed.value = new_text
     of FocusMode.CreationWindow:
         let last_selection = G.creation_window_selection_options[G.creation_window_selection_index]
         echo fmt"Previous selection: {last_selection.text}"

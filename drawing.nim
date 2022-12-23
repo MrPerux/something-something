@@ -4,6 +4,7 @@ import sdl_wrapper
 import types
 import colors
 import autocomplete
+import editables
 
 ## Library imports
 import sdl2
@@ -26,7 +27,7 @@ proc drawScreen*() =
             let name_string = fmt"{named_texty_line.name.substr(max(0, named_texty_line.name.len - 15)):<15} "
             drawStandardSizeTextFast(cstring(name_string), whitestWhite, 0, y)
             x += cast[cint](name_string.len) * 10
-        for texty in named_texty_line.texties:
+        for texty in named_texty_line.editable.textyIterator():
             ## Spacing/layout
             if texty.kind == Spacing:
                 for c in texty.text:
