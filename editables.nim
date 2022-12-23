@@ -6,29 +6,28 @@ import types
 import std/options
 
 ### Editable Code
-method textyIterator*(x: Editable): seq[Texty] {.base.} = discard
+method textyIterator*(x: Editable, texties: var seq[Texty]) {.base.} = discard
 
 ## Unparsed
-method textyIterator*(x: EditableUnparsed): seq[Texty] =
+method textyIterator*(x: EditableUnparsed, texties: var seq[Texty]) =
     if G.optionally_selected_editable.isSome and G.optionally_selected_editable.get() == x:
-        result.add(Texty(text: x.value, kind: CurrentlyTyping, currently_typing_kind: Unparsed))
+        texties.add(Texty(text: x.value, kind: CurrentlyTyping, currently_typing_kind: Unparsed))
     else:
-        result.add(Texty(text: x.value, kind: Unparsed))
+        texties.add(Texty(text: x.value, kind: Unparsed))
 
 proc initEditableUnparsed*(value: string): EditableUnparsed =
     result = EditableUnparsed(value: value)
 
 ## Parameters
-method textyIterator*(x: EditableParameters): seq[Texty] =
-    result.add(Texty(text: "(", kind: Punctuation))
+method textyIterator*(x: EditableParameters, texties: var seq[Texty]) =
+    texties.add(Texty(text: "(", kind: Punctuation))
     var is_first = true
     for value in x.parameters_unparsed:
         if not is_first:
-            result.add(Texty(text: ", ", kind: Punctuation))
-        for t in textyIterator(value):
-            result.add(t)
+            texties.add(Texty(text: ", ", kind: Punctuation))
+        textyIterator(value, texties)
         is_first = false
-    result.add(Texty(text: ")", kind: Punctuation))
+    texties.add(Texty(text: ")", kind: Punctuation))
 
 proc initEditableParameters*(parameters_unparsed: seq[EditableUnparsed]): EditableParameters =
     result = EditableParameters(parameters_unparsed: parameters_unparsed)
@@ -37,13 +36,12 @@ proc initEditableParameters*(parameters_unparsed: seq[EditableUnparsed]): Editab
 
 
 ## Body
-method textyIterator*(x: EditableBody): seq[Texty] =
-    result.add(Texty(text: "\t\n", kind: Spacing))
+method textyIterator*(x: EditableBody, texties: var seq[Texty]) =
+    texties.add(Texty(text: "\t\n", kind: Spacing))
     for value in x.lines:
-        for t in textyIterator(value):
-            result.add(t)
-        result.add(Texty(text: "\n", kind: Spacing))
-    result.add(Texty(text: "\r", kind: Spacing))
+        textyIterator(value, texties)
+        texties.add(Texty(text: "\n", kind: Spacing))
+    texties.add(Texty(text: "\r", kind: Spacing))
 
 proc initEditableBody*(lines: seq[Editable]): EditableBody =
     result = EditableBody(lines: lines)
@@ -52,17 +50,14 @@ proc initEditableBody*(lines: seq[Editable]): EditableBody =
 
 ## Procedure Definition
 
-method textyIterator*(x: EditableProcedureDefinition): seq[Texty] =
-    result.add(Texty(text: "proc", kind: Keyword))
-    result.add(Texty(text: " ", kind: Spacing))
-    for t in textyIterator(x.name):
-        result.add(t)
-    for t in textyIterator(x.parameters):
-        result.add(t)
-    result.add(Texty(text: " ", kind: Spacing))
-    result.add(Texty(text: "=", kind: Punctuation))
-    for t in textyIterator(x.body):
-        result.add(t)
+method textyIterator*(x: EditableProcedureDefinition, texties: var seq[Texty]) =
+    texties.add(Texty(text: "proc", kind: Keyword))
+    texties.add(Texty(text: " ", kind: Spacing))
+    textyIterator(x.name, texties)
+    textyIterator(x.parameters, texties)
+    texties.add(Texty(text: " ", kind: Spacing))
+    texties.add(Texty(text: "=", kind: Punctuation))
+    textyIterator(x.body, texties)
 
 proc initEditableProcedureDefinition*(name: EditableUnparsed, parameters: EditableParameters, body: EditableBody): EditableProcedureDefinition =
     result = EditableProcedureDefinition(name: name, parameters: parameters, body: body)
