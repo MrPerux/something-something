@@ -60,11 +60,18 @@ proc drawScreen*() =
                     color(255, 130, 160, 255)
                 else:
                     color(255, 255, 255, 255)
+                    
             drawStandardSizeTextFast(cstring(texty.text), color, x, y)
             x += 10 * cast[cint](texty.text.len)
             if texty.kind == CurrentlyTyping:
-                G.renderer.setDrawColor(200, 200, 200, 255)
-                G.renderer.drawLine(x, y, x, y + 20)
+                sdlAssertSuccess G.renderer.setDrawColor(200, 200, 200, 255)
+                sdlAssertSuccess G.renderer.drawLine(x, y, x, y + 18)
+                ## These next two lines are needed to fix a stray pixel introduced by the previous drawLine
+                ## Namely, after the drawLine the next call to renderer.copy in drawStandardSizeTextFast
+                ## produces a stray pixel in the bottom right corner of the character drawn. This
+                ## is most likely a driver issue and might not be reproducable on other systems.
+                G.renderer.setDrawColor 8, 21, 27, 255 # dark cyan (background)
+                sdlAssertSuccess G.renderer.drawLine(0, 0, 0, 0)
             
         ## New line
         y += 16

@@ -8,6 +8,7 @@ import std/options
 ### Editable Code
 method textyIterator*(x: Editable, texties: var seq[Texty]) {.base.} = discard
 
+
 ## Unparsed
 method textyIterator*(x: EditableUnparsed, texties: var seq[Texty]) =
     if G.optionally_selected_editable.isSome and G.optionally_selected_editable.get() == x:
@@ -17,6 +18,7 @@ method textyIterator*(x: EditableUnparsed, texties: var seq[Texty]) =
 
 proc initEditableUnparsed*(value: string): EditableUnparsed =
     result = EditableUnparsed(value: value)
+
 
 ## Parameters
 method textyIterator*(x: EditableParameters, texties: var seq[Texty]) =
@@ -48,8 +50,8 @@ proc initEditableBody*(lines: seq[Editable]): EditableBody =
     for value in lines:
         value.parent = result
 
-## Procedure Definition
 
+## Procedure Definition
 method textyIterator*(x: EditableProcedureDefinition, texties: var seq[Texty]) =
     texties.add(Texty(text: "proc", kind: Keyword))
     texties.add(Texty(text: " ", kind: Spacing))
@@ -64,3 +66,18 @@ proc initEditableProcedureDefinition*(name: EditableUnparsed, parameters: Editab
     name.parent = result
     parameters.parent = result
     body.parent = result
+
+## Procedure Definition
+method textyIterator*(x: EditableSetStatement, texties: var seq[Texty]) =
+    texties.add(Texty(text: "set", kind: Keyword))
+    texties.add(Texty(text: " ", kind: Spacing))
+    textyIterator(x.variable, texties)
+    texties.add(Texty(text: " ", kind: Spacing))
+    texties.add(Texty(text: "=", kind: Punctuation))
+    texties.add(Texty(text: " ", kind: Spacing))
+    textyIterator(x.value, texties)
+
+proc initEditableProcedureDefinition*(variable: EditableUnparsed, value: Editable): EditableSetStatement =
+    result = EditableSetStatement(variable: variable, value: value)
+    variable.parent = result
+    value.parent = result

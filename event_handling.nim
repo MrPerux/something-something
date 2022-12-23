@@ -4,6 +4,7 @@ import types
 import sdl_wrapper
 import autocomplete
 import code_actions
+import editables
 
 ## Library imports
 import sdl2
@@ -28,6 +29,10 @@ proc onInput(input: Input) =
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_C:
             G.running = false
             echo "Quitting due to Ctrl + C..."
+
+        ## Ctrl D -> Debug Mode
+        if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_D:
+            G.debug_mode = not G.debug_mode
 
         ## Ctrl F -> Toggle Find
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_F:
@@ -54,17 +59,46 @@ proc onInput(input: Input) =
             else:
                 G.focus_stack.add(FocusMode.GotoWindow)
 
-        ## Ctrl J -> Next Item (Creation Window)
+        ## Ctrl J -> Next Item
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_J:
+            ## Creation Window
             if G.focus_mode == FocusMode.CreationWindow:
                 if G.creation_window_selection_index + 1 < G.creation_window_selection_options.len:
                     G.creation_window_selection_index += 1
+            
+            ## Text
+            if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
+                var child = G.optionally_selected_editable.get()
+                while not child.parent.isNil:
+                    let parent = child.parent
+                    if parent of EditableBody:
+                        var body = cast[EditableBody](parent)
+                        let child_index = body.lines.find(child)
+                        if child_index + 1 < body.lines.len:
+                            G.optionally_selected_editable = some(cast[Editable](body.lines[child_index + 1]))
+                            break
+                    child = parent
 
-        ## Ctrl K -> Previous Item (Creation Window)
+        ## Ctrl K -> Previous Item
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_K:
+            ## Creation Window
             if G.focus_mode == FocusMode.CreationWindow:
                 if G.creation_window_selection_index - 1 >= 0:
                     G.creation_window_selection_index -= 1
+
+            ## Text
+            if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
+                var child = G.optionally_selected_editable.get()
+                while not child.parent.isNil:
+                    let parent = child.parent
+                    if parent of EditableBody:
+                        var body = cast[EditableBody](parent)
+                        let child_index = body.lines.find(child)
+                        if child_index > 0:
+                            G.optionally_selected_editable = some(cast[Editable](body.lines[child_index - 1]))
+                            break
+                    child = parent
+                
 
         ## Typing
         if input.is_displayable:
@@ -85,13 +119,29 @@ proc onInput(input: Input) =
                 onTextChange(G.current_text & $input.character)
 
         elif input.scancode == SDL_SCANCODE_BACKSPACE:
-            if G.current_text.len >= 1:
-                onTextChange(G.current_text[0 ..< ^1])
+            case input.mod_ctrl
+            of true:
+                onTextChange("")
+            of false:
+                if G.current_text.len >= 1:
+                    onTextChange(G.current_text[0 ..< ^1])
 
         elif input.scancode == SDL_SCANCODE_RETURN:
             case G.focus_mode
             of FocusMode.Text:
-                discard # TODO
+                if G.optionally_selected_editable.isSome:
+                    var child = G.optionally_selected_editable.get()
+                    while not child.parent.isNil:
+                        let parent = child.parent
+                        if parent of EditableBody:
+                            var body = cast[EditableBody](parent)
+                            let child_index = body.lines.find(child)
+                            var new_editable = initEditableUnparsed("")
+                            new_editable.parent = body
+                            body.lines.insert(new_editable, child_index + 1)
+                            G.optionally_selected_editable = some(cast[Editable](new_editable))
+                            break
+                        child = parent
             of FocusMode.CreationWindow:
                 var should_clear_search_text_and_close_window = false
                 let creation_option = G.creation_window_selection_options[G.creation_window_selection_index]

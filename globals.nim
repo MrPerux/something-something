@@ -20,6 +20,7 @@ type Globals* = object
     renderer*: RendererPtr
     current_fps*: float
     was_typing_apostrophe_like_character*: char
+    debug_mode*: bool
     
     ## Is screen maximized
     is_screen_maximized*: bool
