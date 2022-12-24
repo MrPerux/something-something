@@ -58,7 +58,7 @@ proc main =
 
     initTextureAtlasStandardSize()
     
-    # Gameloop variables
+    ## Gameloop variables
     var
         dt: float32
 

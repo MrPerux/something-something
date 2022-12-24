@@ -18,6 +18,6 @@ proc addTodoProcedureAndSwitch*() =
     G.texty_lines.add(initNamedTextyLine(procedure.name.value, procedure))
 
 proc addIfStatementAndSwitch*() =
-    discard # TODO
+    discard ## TODO
 proc addCommentAndSwitch*() =
-    discard # TODO
+    discard ## TODO

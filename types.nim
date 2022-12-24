@@ -42,7 +42,7 @@ type Input* = object
 type TextKind* = enum
     CurrentlyTyping
     Todo
-    Unparsed # TODO: Parse stuff and remove this :)
+    Unparsed ## TODO: Parse stuff and remove this :)
     Spacing
     Keyword
     Type
@@ -91,16 +91,16 @@ type EditableUnparsed* = ref object of Editable
     value*: string
     
 type EditableParameters* = ref object of Editable
-    parameters_unparsed*: seq[EditableUnparsed] # TODO: Turn into optionally typed identifiers
+    parameters_unparsed*: seq[EditableUnparsed] ## TODO: Turn into optionally typed identifiers
 
 type EditableBody* = ref object of Editable
     lines*: seq[Editable]
 
 type EditableProcedureDefinition* = ref object of Editable
-    name*: EditableUnparsed # TODO: Turn into an editable identifier
+    name*: EditableUnparsed ## TODO: Turn into an editable identifier
     parameters*: EditableParameters
     body*: EditableBody
 
 type EditableSetStatement* = ref object of Editable
-    variable*: EditableUnparsed # TODO: Turn into an editable identifier
+    variable*: EditableUnparsed ## TODO: Turn into an editable identifier
     value*: Editable

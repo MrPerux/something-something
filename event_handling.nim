@@ -16,14 +16,12 @@ import std/options
 ### Handle events
 proc onInput(input: Input) =
     case input.kind:
-    of InputKind.Keydown:
-        # echo $input
-        
+    of InputKind.Keydown:        
         ## F11 -> Toggle Fullscreen
         if input.scancode == Scancode.SDL_SCANCODE_F11:
             G.is_screen_maximized = not G.is_screen_maximized
             setScreenDimensions(G.is_screen_maximized)
-            updateWindowDimensions(G.is_screen_maximized)
+            updateWindowDimensions()
 
         ## Ctrl C -> Quit
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_C:
@@ -70,20 +68,7 @@ proc onInput(input: Input) =
             if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
                 let new_editable = maybeNextEditableLeaveSoUnparsedRightNow(G.optionally_selected_editable.get())
                 if new_editable.isSome:
-                    echo fmt"New editable: {new_editable.get()}"
                     G.optionally_selected_editable = new_editable
-                    # echo "Getting the first leaf"
-                    # G.optionally_selected_editable = some[Editable](new_editable.get().firstLeaf)
-                # var child = G.optionally_selected_editable.get()
-                # while not child.parent.isNil:
-                #     let parent = child.parent
-                #     if parent of EditableBody:
-                #         var body = cast[EditableBody](parent)
-                #         let child_index = body.lines.find(child)
-                #         if child_index + 1 < body.lines.len:
-                #             G.optionally_selected_editable = some(cast[Editable](body.lines[child_index + 1]))
-                #             break
-                #     child = parent
 
         ## Ctrl K -> Previous Item
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_K:
@@ -96,35 +81,11 @@ proc onInput(input: Input) =
             if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
                 let new_editable = maybePreviousEditableLeaveSoUnparsedRightNow(G.optionally_selected_editable.get())
                 if new_editable.isSome:
-                    echo fmt"New editable: {new_editable.get()}"
                     G.optionally_selected_editable = new_editable
-                # var child = G.optionally_selected_editable.get()
-                # while not child.parent.isNil:
-                #     let parent = child.parent
-                #     if parent of EditableBody:
-                #         var body = cast[EditableBody](parent)
-                #         let child_index = body.lines.find(child)
-                #         if child_index > 0:
-                #             G.optionally_selected_editable = some(cast[Editable](body.lines[child_index - 1]))
-                #             break
-                #     child = parent
-                
 
         ## Typing
         if input.is_displayable:
             var discard_character = false
-            # if G.focus_mode == FocusMode.Text and input.character == ' ':
-            #     case G.current_text
-            #     of "if":
-            #         discard G.texty_lines[^1].texties.pop()
-            #         addIfStatementAndSwitch()
-            #         discard_character = true
-            #     of "proc":
-            #         discard G.texty_lines[^1].texties.pop()
-            #         addTodoProcedureAndSwitch()
-            #         discard_character = true
-            #     else:
-            #         discard
             if not discard_character:
                 onTextChange(G.current_text & $input.character)
 
@@ -209,36 +170,33 @@ proc onTextChange*(new_text: string) =
     case G.focus_mode
     of FocusMode.Search:
         G.current_search_term = new_text
+
     of FocusMode.Text:
         if G.optionally_selected_editable.isSome and G.optionally_selected_editable.get() of EditableUnparsed:
             var editable_unparsed = cast[EditableUnparsed](G.optionally_selected_editable.get())
             editable_unparsed.value = new_text
+
     of FocusMode.CreationWindow:
         let last_selection = G.creation_window_selection_options[G.creation_window_selection_index]
-        echo fmt"Previous selection: {last_selection.text}"
         G.creation_window_search = new_text
         remakeCreationWindowSelectionOptions()
         var maybe_new_index: cint = -1
         for i in 0 ..< G.creation_window_selection_options.len:
             if G.creation_window_selection_options[i].text == last_selection.text:
                 maybe_new_index = cast[cint](i)
-
-        echo fmt"Maybe_new_index: {maybe_new_index}"
         if maybe_new_index == -1:
             G.creation_window_selection_index = min(cast[cint](G.creation_window_selection_options.len) - 1, G.creation_window_selection_index)
         else:
             G.creation_window_selection_index = maybe_new_index
+
     of FocusMode.GotoWindow:
         let last_selection = G.goto_window_selection_options[G.goto_window_selection_index]
-        echo fmt"Previous selection: {last_selection.text}"
         G.goto_window_search = new_text
         remakeGotoWindowSelectionOptions()
         var maybe_new_index: cint = -1
         for i in 0 ..< G.goto_window_selection_options.len:
             if G.goto_window_selection_options[i].text == last_selection.text:
                 maybe_new_index = cast[cint](i)
-
-        echo fmt"Maybe_new_index: {maybe_new_index}"
         if maybe_new_index == -1:
             G.goto_window_selection_index = min(cast[cint](G.goto_window_selection_options.len) - 1, G.goto_window_selection_index)
         else:
