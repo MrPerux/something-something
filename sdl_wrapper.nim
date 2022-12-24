@@ -31,11 +31,9 @@ proc setScreenDimensions*(maximized_mode: bool) =
         G.width = 600
         G.height = 400
 
-proc updateWindowDimensions*(maximized_mode: bool) =
+proc updateWindowDimensions*() =
     G.window.setSize(G.width, G.height)
     G.window.setPosition(SDL_WINDOWPOS_CENTERED, 0)
-    # if maximized_mode:
-    #     maximizeWindow(G.window)
     G.window.raiseWindow
 
 
@@ -82,14 +80,10 @@ proc initTextureAtlasStandardSize*() =
 
     ## Rendering glyphs
     for c in 33..<number_of_glyphs:
-        # if c mod 5 == 1:
-        #     continue
         let surface = ttf.renderTextBlended(font, cstring($cast[char](c)), color(255, 255, 255, 255))
         var destination = rect(
             cast[cint](c * glyph_width),
             0)
-        # sdlFailIf setSurfaceBlendMode(surface, BlendMode_Blend) != 0:
-        #     "blend mode"
         surface.blitSurface(nil, atlas_surf, addr destination)
     
     ## Store result

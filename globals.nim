@@ -63,7 +63,7 @@ func current_text*(g: Globals): string =
             var editable_unparsed = cast[EditableUnparsed](g.optionally_selected_editable.get())
             editable_unparsed.value
         else:
-            "" # TODO: Shouldn't be getting shit atm
+            "" ## TODO: Shouldn't be getting shit atm
     of FocusMode.CreationWindow:
         g.creation_window_search
     of FocusMode.GotoWindow:

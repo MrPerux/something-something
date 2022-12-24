@@ -14,22 +14,12 @@ method maybeFirst*(x: Editable): Option[Editable] {.base.} = discard
 method maybeLast*(x: Editable): Option[Editable] {.base.} = discard
 method maybeNextEditableOfChild*(x: Editable, child: Editable): Option[Editable] {.base.} = discard
 method maybePreviousEditableOfChild*(x: Editable, child: Editable): Option[Editable] {.base.} = discard
-# proc maybeNextEditable*(x: Editable): Option[Editable] =
-#     var child = x
-#     while not child.parent.isNil:
-#         let r = child.parent.maybeNextEditableOfChild(child)
-#         if r.isSome:
-#             return r
-#         child = child.parent
-#     return none[Editable]()
 proc maybeNextEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable] =
     var current = x
     while true:
-        # echo fmt"At: {current}"
         ## Check for children
         let maybe_child = current.maybeFirst
         if maybe_child.isSome:
-            # echo "Has child"
             if maybe_child.get() of EditableUnparsed:
                 return maybe_child
             current = maybe_child.get()
@@ -38,27 +28,22 @@ proc maybeNextEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable] =
         ## Otherwise go to first sibling of a forefather
         while true:
             if current.parent.isNil:
-                # echo "No parent, exiting"
                 return
 
             let maybe_sibling = current.parent.maybeNextEditableOfChild(current)
             if maybe_sibling.isSome:
-                # echo "Has sibling"
                 if maybe_sibling.get() of EditableUnparsed:
                     return maybe_sibling
                 current = maybe_sibling.get()
                 break
-            # echo "Going to parent"
             current = current.parent
-            # echo fmt"At: {current}"
+
 proc maybePreviousEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable] =
     var current = x
     while true:
-        # echo fmt"At: {current}"
         ## Check for children
         let maybe_child = current.maybeLast
         if maybe_child.isSome:
-            # echo "Has child"
             if maybe_child.get() of EditableUnparsed:
                 return maybe_child
             current = maybe_child.get()
@@ -67,25 +52,15 @@ proc maybePreviousEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable
         ## Otherwise go to first sibling of a forefather
         while true:
             if current.parent.isNil:
-                # echo "No parent, exiting"
                 return
 
             let maybe_sibling = current.parent.maybePreviousEditableOfChild(current)
             if maybe_sibling.isSome:
-                # echo "Has sibling"
                 if maybe_sibling.get() of EditableUnparsed:
                     return maybe_sibling
                 current = maybe_sibling.get()
                 break
-            # echo "Going to parent"
             current = current.parent
-            # echo fmt"At: {current}"
-        
-
-# proc firstLeaf*(x: Editable): Editable =
-#     result = x
-#     while not (result of EditableUnparsed):
-#         result = result.maybeFirst
 
 
 ## Unparsed
@@ -104,9 +79,8 @@ method maybeFirst*(x: EditableUnparsed): Option[Editable] =
 method maybeLast*(x: EditableUnparsed): Option[Editable] =
     none[Editable]()
 
-# method maybeNextEditableOfChild*(x: EditableUnparsed, child: Editable): Option[Editable] =
-# method maybePreviousEditableOfChild*(x: EditableUnparsed, child: Editable): Option[Editable] =
-    
+method maybeNextEditableOfChild*(x: EditableUnparsed, child: Editable): Option[Editable] = discard
+method maybePreviousEditableOfChild*(x: EditableUnparsed, child: Editable): Option[Editable] = discard
 
 proc initEditableUnparsed*(value: string): EditableUnparsed =
     result = EditableUnparsed(value: value)

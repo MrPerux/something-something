@@ -14,7 +14,7 @@ import std/strutils
 ### Drawing
 proc drawScreen*() =
     ## Background
-    G.renderer.setDrawColor 8, 21, 27, 255 # dark cyan
+    G.renderer.setDrawColor 8, 21, 27, 255 ## Dark cyan
     G.renderer.clear()
 
     ## Texties
@@ -70,7 +70,7 @@ proc drawScreen*() =
                 ## Namely, after the drawLine the next call to renderer.copy in drawStandardSizeTextFast
                 ## produces a stray pixel in the bottom right corner of the character drawn. This
                 ## is most likely a driver issue and might not be reproducable on other systems.
-                G.renderer.setDrawColor 8, 21, 27, 255 # dark cyan (background)
+                G.renderer.setDrawColor 8, 21, 27, 255 ## Dark cyan (background)
                 sdlAssertSuccess G.renderer.drawLine(0, 0, 0, 0)
             
         ## New line
@@ -79,7 +79,7 @@ proc drawScreen*() =
         x = 0
 
     ## Bottom bar
-    G.renderer.setDrawColor(140, 140, 240, 255) # Light magenta
+    G.renderer.setDrawColor(140, 140, 240, 255) ## Light magenta
     var below_bar_rect = rect(
         0,
         G.height - 30,
@@ -91,7 +91,7 @@ proc drawScreen*() =
     
     ## Optional search bar
     if G.focus_mode == FocusMode.Search:
-        G.renderer.setDrawColor(28, 41, 47, 255) # Lighter cyan than background
+        G.renderer.setDrawColor(28, 41, 47, 255) ## Lighter cyan than background
         var search_bar_rect = rect(
             G.width div 2,
             0,
@@ -105,7 +105,7 @@ proc drawScreen*() =
         remakeCreationWindowSelectionOptions()
 
         ## Drawing Container
-        G.renderer.setDrawColor(28, 41, 47, 255) # Lighter cyan than background
+        G.renderer.setDrawColor(28, 41, 47, 255) ## Lighter cyan than background
         let
             creation_window_width: cint = 300
             creation_window_height: cint = cast[cint](G.creation_window_selection_options.len) * 20 + 30
@@ -184,7 +184,7 @@ proc drawScreen*() =
         remakeGotoWindowSelectionOptions()
 
         ## Drawing Container
-        G.renderer.setDrawColor(28, 41, 47, 255) # Lighter cyan than background
+        G.renderer.setDrawColor(28, 41, 47, 255) ## Lighter cyan than background
         let
             goto_window_width: cint = 300
             goto_window_height: cint = cast[cint](G.goto_window_selection_options.len) * 20 + 30
