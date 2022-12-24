@@ -68,16 +68,22 @@ proc onInput(input: Input) =
             
             ## Text
             if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
-                var child = G.optionally_selected_editable.get()
-                while not child.parent.isNil:
-                    let parent = child.parent
-                    if parent of EditableBody:
-                        var body = cast[EditableBody](parent)
-                        let child_index = body.lines.find(child)
-                        if child_index + 1 < body.lines.len:
-                            G.optionally_selected_editable = some(cast[Editable](body.lines[child_index + 1]))
-                            break
-                    child = parent
+                let new_editable = maybeNextEditableLeaveSoUnparsedRightNow(G.optionally_selected_editable.get())
+                if new_editable.isSome:
+                    echo fmt"New editable: {new_editable.get()}"
+                    G.optionally_selected_editable = new_editable
+                    # echo "Getting the first leaf"
+                    # G.optionally_selected_editable = some[Editable](new_editable.get().firstLeaf)
+                # var child = G.optionally_selected_editable.get()
+                # while not child.parent.isNil:
+                #     let parent = child.parent
+                #     if parent of EditableBody:
+                #         var body = cast[EditableBody](parent)
+                #         let child_index = body.lines.find(child)
+                #         if child_index + 1 < body.lines.len:
+                #             G.optionally_selected_editable = some(cast[Editable](body.lines[child_index + 1]))
+                #             break
+                #     child = parent
 
         ## Ctrl K -> Previous Item
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_K:
@@ -88,16 +94,20 @@ proc onInput(input: Input) =
 
             ## Text
             if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
-                var child = G.optionally_selected_editable.get()
-                while not child.parent.isNil:
-                    let parent = child.parent
-                    if parent of EditableBody:
-                        var body = cast[EditableBody](parent)
-                        let child_index = body.lines.find(child)
-                        if child_index > 0:
-                            G.optionally_selected_editable = some(cast[Editable](body.lines[child_index - 1]))
-                            break
-                    child = parent
+                let new_editable = maybePreviousEditableLeaveSoUnparsedRightNow(G.optionally_selected_editable.get())
+                if new_editable.isSome:
+                    echo fmt"New editable: {new_editable.get()}"
+                    G.optionally_selected_editable = new_editable
+                # var child = G.optionally_selected_editable.get()
+                # while not child.parent.isNil:
+                #     let parent = child.parent
+                #     if parent of EditableBody:
+                #         var body = cast[EditableBody](parent)
+                #         let child_index = body.lines.find(child)
+                #         if child_index > 0:
+                #             G.optionally_selected_editable = some(cast[Editable](body.lines[child_index - 1]))
+                #             break
+                #     child = parent
                 
 
         ## Typing

@@ -14,7 +14,7 @@ proc addTodoProcedureAndSwitch*() =
         initEditableUnparsed("proc2"),
         initEditableParameters(@[initEditableUnparsed("param1"), initEditableUnparsed("param2")]),
         initEditableBody(@[cast[Editable](initEditableUnparsed("whoop whoop")), cast[Editable](initEditableUnparsed("Noice"))]))
-    G.optionally_selected_editable = some(cast[Editable](procedure.body.lines[0]))
+    G.optionally_selected_editable = some(cast[Editable](procedure.name))
     G.texty_lines.add(initNamedTextyLine(procedure.name.value, procedure))
 
 proc addIfStatementAndSwitch*() =
