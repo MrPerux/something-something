@@ -45,12 +45,19 @@ type Globals* = object
     show_texty_line_names*: bool
     texty_lines*: seq[NamedTextyLine]
     optionally_selected_editable*: Option[Editable]
+    current_slice*: EditableBody
 
     ## Fonts
     texture_atlas_standard_size*: TexturePtr
     fonts*: Table[cint, FontPtr]
 
-var G* = Globals(running: true, is_screen_maximized: fileExists("runtime/maximized_mode.option"), focus_stack: @[FocusMode.Text], current_search_term: "poodles")
+var G* = Globals(
+    running: true,
+    is_screen_maximized: fileExists("runtime/maximized_mode.option"),
+    focus_stack: @[FocusMode.Text],
+    current_search_term: "poodles",
+    current_slice: EditableBody(),
+)
 
 func focus_mode*(g: Globals): FocusMode =
     g.focus_stack[^1]
