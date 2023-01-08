@@ -17,8 +17,8 @@ import std/strformat
 proc onInput(input: Input) =
     case input.kind:
     of InputKind.Keydown:        
-        ## F11 -> Toggle Fullscreen
-        if input.scancode == Scancode.SDL_SCANCODE_F11:
+        ## F11 or Alt F -> Toggle Fullscreen
+        if input.scancode == Scancode.SDL_SCANCODE_F11 or (input.mod_alt and input.scancode == Scancode.SDL_SCANCODE_F):
             G.is_screen_maximized = not G.is_screen_maximized
             setScreenDimensions(G.is_screen_maximized)
             updateWindowDimensions()

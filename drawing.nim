@@ -145,13 +145,7 @@ proc drawScreen*() =
             ## Color selection
             let color =
                 if selected:
-                    case option.kind
-                    of Todo:
-                        color(130, 255, 160, 255)
-                    of Keyword:
-                        color(255, 170, 180, 255)
-                    else:
-                        whitestWhite
+                    whitestWhite
                 else:
                     case option.kind
                     of Todo:
@@ -172,8 +166,9 @@ proc drawScreen*() =
             drawStandardSizeTextFast(cstring(text), color, (G.width - creation_window_width) div 2, y)
 
             ## Little tildes for ~~aethestics~~
-            let length = max(10 - cast[cint](len(text)), 4)
-            drawStandardSizeTextFast(cstring("~".repeat(length)), color(128, 128, 128, 255), ((G.width + creation_window_width) div 2) - 10 * length, y)           
+            if selected:
+                let length = max(10 - cast[cint](len(text)), 4)
+                drawStandardSizeTextFast(cstring("~".repeat(length)), color(178, 178, 178, 255), ((G.width + creation_window_width) div 2) - 10 * length, y)           
             
             ## Advance the line position
             y += 20

@@ -15,6 +15,7 @@ proc addTodoProcedureAndSwitch*() =
         initEditableParameters(@[initEditableUnparsed("param1"), initEditableUnparsed("param2")]),
         initEditableBody(@[cast[Editable](initEditableUnparsed("whoop whoop")), cast[Editable](initEditableUnparsed("Noice"))]))
     G.current_slice.lines.add(procedure)
+    
     procedure.parent = G.current_slice
     G.optionally_selected_editable = some(cast[Editable](procedure.name))
     G.texty_lines.add(initNamedTextyLine(procedure.name.value, procedure))
