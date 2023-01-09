@@ -16,6 +16,7 @@ func pos*(x: cint, y: cint): Pos =
 
 proc `+`*(a: Pos, b: Pos): Pos =
     pos(a.x + b.x, a.y + b.y)
+
 proc `-`*(a: Pos, b: Pos): Pos =
     pos(a.x - b.x, a.y - b.y)
 
@@ -49,7 +50,6 @@ type TextKind* = enum
     Literal
     Punctuation
 
-
 type Texty* = ref object
     text*: string
     case kind*: TextKind
@@ -64,17 +64,6 @@ func `$`*(x: Texty): string =
     fmt"<{x.kind}:{x.text}>"
 
 
-type NamedTextyLine* = object
-    name*: string
-    editable*: Editable
-
-func initNamedTextyLine*(name: string, editable: Editable): NamedTextyLine =
-    NamedTextyLine(name: name, editable: editable)
-
-func `$`*(x: NamedTextyLine): string =
-    fmt"({x.name}:...)"
-
-
 ### Focus
 type FocusMode* = enum
     Text
@@ -82,6 +71,25 @@ type FocusMode* = enum
     CreationWindow
     GotoWindow
 
+
+## Filter
+type FilterKind* = enum
+    FilterOnName
+    FilterOnType
+    FilterOnNumberOfLinesInFunctionBody
+
+type FilterTypeKind* = enum
+    FunctionDefition
+    TypeDefinition
+
+type Filter* = object
+    case kind*: FilterKind
+    of FilterOnName:
+        name_to_filter*: string
+    of FilterOnType:
+        type_to_filter*: FilterTypeKind
+    of FilterOnNumberOfLinesInFunctionBody:
+        at_least_n_lines*: int
 
 ### Editable Code
 type Editable* = ref object of RootObj
@@ -104,6 +112,7 @@ type EditableProcedureDefinition* = ref object of Editable
 type EditableSetStatement* = ref object of Editable
     variable*: EditableUnparsed ## TODO: Turn into an editable identifier
     value*: Editable
+
 
 ### Font Info
 type FontInfo* = ref object

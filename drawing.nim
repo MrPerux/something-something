@@ -22,16 +22,12 @@ proc drawScreen*() =
     ## Texties
     let texties_font = G.standard_font
     var
-        x_left: cint = if G.show_texty_line_names: 160 else: 0
+        x_left: cint = 0
         x: cint = 0
         y: cint = 40
-    for idx, named_texty_line in G.texty_lines:
-        if G.show_texty_line_names:
-            let name_string = fmt"{named_texty_line.name.substr(max(0, named_texty_line.name.len - 15)):<15} "
-            drawTextFast(G.standard_font, name_string, whitestWhite, 0, y)
-            x += cast[cint](name_string.len) * texties_font.glyph_x_stride
+    for idx, editable in G.current_slice.lines:
         var texties: seq[Texty]
-        named_texty_line.editable.textyIterator(texties)
+        editable.textyIterator(texties)
         for texty in texties:
             ## Spacing/layout
             if texty.kind == Spacing:
@@ -80,7 +76,7 @@ proc drawScreen*() =
             
         ## New line
         y += texties_font.glyph_y_stride
-        xleft = if G.show_texty_line_names: 160 else: 0
+        xleft = 0
         x = 0
 
     ## Bottom bar

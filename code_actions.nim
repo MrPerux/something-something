@@ -14,11 +14,20 @@ proc addTodoProcedureAndSwitch*() =
         initEditableUnparsed("proc2"),
         initEditableParameters(@[initEditableUnparsed("param1"), initEditableUnparsed("param2")]),
         initEditableBody(@[cast[Editable](initEditableUnparsed("whoop whoop")), cast[Editable](initEditableUnparsed("Noice"))]))
-    G.current_slice.lines.add(procedure)
+    G.all_editables.add(procedure)
+    G.current_slice.lines.add(procedure) ## TODO: should we update filter?
     
     procedure.parent = G.current_slice
     G.optionally_selected_editable = some(cast[Editable](procedure.name))
-    G.texty_lines.add(initNamedTextyLine(procedure.name.value, procedure))
+
+proc addTopLevelSmallProcedureWithName*(name: string) =
+    var procedure = initEditableProcedureDefinition(
+        initEditableUnparsed(name),
+        initEditableParameters(@[initEditableUnparsed("johan")]),
+        initEditableBody(@[cast[Editable](initEditableUnparsed("..."))]))
+    G.all_editables.add(procedure)
+    G.current_slice.lines.add(procedure) ## TODO: should we update filter?
+    procedure.parent = G.current_slice
 
 proc addIfStatementAndSwitch*() =
     discard ## TODO

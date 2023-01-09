@@ -5,6 +5,7 @@ import sdl_wrapper
 import autocomplete
 import code_actions
 import editables
+import slices
 
 ## Library imports
 import sdl2
@@ -38,10 +39,7 @@ proc onInput(input: Input) =
                 discard G.focus_stack.pop()
             else:
                 G.focus_stack.add(FocusMode.Search)
-
-        ## Alt N -> Toggle Showing Texty Line Names
-        if input.mod_alt and input.scancode == Scancode.SDL_SCANCODE_N:
-            G.show_texty_line_names = not G.show_texty_line_names
+                refreshSearch()
 
         ## Ctrl N -> Pop up Creation Window
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_N:
@@ -174,6 +172,7 @@ proc onTextChange*(new_text: string) =
     case G.focus_mode
     of FocusMode.Search:
         G.current_search_term = new_text
+        refreshSearch()
 
     of FocusMode.Text:
         if G.optionally_selected_editable.isSome and G.optionally_selected_editable.get() of EditableUnparsed:

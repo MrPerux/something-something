@@ -40,18 +40,18 @@ type Globals* = object
     goto_window_search*: string
     goto_window_selection_index*: cint
     goto_window_selection_options*: seq[Texty]
-
-    ## Texties
-    show_texty_line_names*: bool
-    texty_lines*: seq[NamedTextyLine]
+    
+    ## Editables
     optionally_selected_editable*: Option[Editable]
+    all_editables*: seq[Editable]
     current_slice*: EditableBody
+    current_slice_filter*: Filter
 
     ## Fonts
-    # standard_font*: TexturePtr
     switchable_fonts*: seq[FontInfo]
     standard_font*: FontInfo
     fonts*: Table[cint, FontPtr]
+
 
 var G* = Globals(
     running: true,
@@ -60,6 +60,7 @@ var G* = Globals(
     current_search_term: "poodles",
     current_slice: EditableBody(),
 )
+
 
 func focus_mode*(g: Globals): FocusMode =
     g.focus_stack[^1]
