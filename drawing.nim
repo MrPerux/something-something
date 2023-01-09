@@ -6,28 +6,30 @@ import colors
 import autocomplete
 import editables
 import text_rendering
+import drawing_helper
 
 ## Library imports
 import sdl2
 import std/strformat
 import std/strutils
 
-### Drawing
+### Draw everything
 proc drawScreen*() =
     ## Background
     G.renderer.setDrawColor 8, 21, 27, 255 ## Dark cyan
     G.renderer.clear()
 
     ## Texties
+    let texties_font = G.standard_font
     var
         x_left: cint = if G.show_texty_line_names: 160 else: 0
         x: cint = 0
-        y: cint = 0
+        y: cint = 40
     for idx, named_texty_line in G.texty_lines:
         if G.show_texty_line_names:
             let name_string = fmt"{named_texty_line.name.substr(max(0, named_texty_line.name.len - 15)):<15} "
-            drawStandardSizeTextFast(cstring(name_string), whitestWhite, 0, y)
-            x += cast[cint](name_string.len) * 10
+            drawTextFast(G.standard_font, name_string, whitestWhite, 0, y)
+            x += cast[cint](name_string.len) * texties_font.glyph_x_stride
         var texties: seq[Texty]
         named_texty_line.editable.textyIterator(texties)
         for texty in texties:
@@ -36,15 +38,15 @@ proc drawScreen*() =
                 for c in texty.text:
                     case c
                     of ' ':
-                        x += 10
+                        x += texties_font.glyph_x_stride
                     of '\t':
-                        x_left += 40
+                        x_left += texties_font.glyph_x_stride * 4
                         x = x_left
                     of '\r':
-                        x_left -= 40
+                        x_left -= texties_font.glyph_x_stride * 4
                         x = x_left
                     of '\n':
-                        y += 16
+                        y += texties_font.glyph_y_stride
                         x = x_left
                     else:
                         raiseAssert(fmt"Invalid spacing character '{c}'")
@@ -60,13 +62,15 @@ proc drawScreen*() =
                 of Keyword:
                     color(255, 130, 160, 255)
                 else:
-                    color(255, 255, 255, 255)
+                    whitestWhite
                     
-            drawStandardSizeTextFast(cstring(texty.text), color, x, y)
-            x += 10 * cast[cint](texty.text.len)
+            drawTextFast(G.standard_font, texty.text, color, x, y)
+            x += texties_font.glyph_x_stride * cast[cint](texty.text.len)
             if texty.kind == CurrentlyTyping:
-                sdlAssertSuccess G.renderer.setDrawColor(200, 200, 200, 255)
-                sdlAssertSuccess G.renderer.drawLine(x, y, x, y + 18)
+                drawCursor(texties_font, x, y)
+                # sdlAssertSuccess G.renderer.drawLine(x, y, x, y + texties_font.glyph_size)
+                # sdlAssertSuccess G.renderer.drawLine(x - 1, y, x - 1, y + texties_font.glyph_size)
+
                 ## These next two lines are needed to fix a stray pixel introduced by the previous drawLine
                 ## Namely, after the drawLine the next call to renderer.copy in drawStandardSizeTextFast
                 ## produces a stray pixel in the bottom right corner of the character drawn. This
@@ -75,7 +79,7 @@ proc drawScreen*() =
                 sdlAssertSuccess G.renderer.drawLine(0, 0, 0, 0)
             
         ## New line
-        y += 16
+        y += texties_font.glyph_y_stride
         xleft = if G.show_texty_line_names: 160 else: 0
         x = 0
 
@@ -87,8 +91,9 @@ proc drawScreen*() =
         G.width,
         30)
     G.renderer.fillRect(below_bar_rect)
-    drawStandardSizeTextFast(cstring(fmt"FPS: {G.current_fps:>5.1f}"), color(255, 255, 255, 255), (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
-    drawStandardSizeTextFast(cstring($G.focus_mode), color(255, 255, 255, 255), G.width - ((30 - 16) div 2) - 10 * cast[cint](len($G.focus_mode)), G.height - 16 - (30 - 16) div 2)
+    # drawTextFast(G.standard_font, fmt"FPS: {G.current_fps:>5.1f}", whitestWhite, (30 - 16) div 2, G.height - 16 - (30 - 16) div 2)
+    drawTextFastAlign(G.standard_font, fmt"FPS: {G.current_fps:>5.1f}", whitestWhite, (30 - G.standard_font.glyph_size) div 2, G.height - 30 div 2, Left, Center)
+    drawTextFastAlign(G.standard_font, $G.focus_mode, whitestWhite, G.width - ((30 - G.standard_font.glyph_size) div 2), G.height - 30 div 2, Right, Center)
     
     ## Optional search bar
     if G.focus_mode == FocusMode.Search:
@@ -99,7 +104,7 @@ proc drawScreen*() =
             G.width - (G.width div 2),
             30)
         G.renderer.fillRect(search_bar_rect)
-        drawText(16, cstring(fmt"Search: '{G.current_search_term}'"), color(255, 255, 255, 255), G.width div 2 + ((30 - 16) div 2), (30 - 16) div 2)
+        drawText(16, fmt"Search: '{G.current_search_term}'", whitestWhite, G.width div 2 + ((30 - 16) div 2), (30 - 16) div 2)
 
     ## Optional creation window
     if G.focus_mode == FocusMode.CreationWindow:
@@ -132,7 +137,7 @@ proc drawScreen*() =
         G.renderer.setDrawColor(68, 81, 87, 255)
         fillPaddedRoundedRect(padded(query_text_rect, 1))
 
-        drawStandardSizeTextFast(cstring(text), color(200, 200, 200, 255), (G.width - creation_window_width) div 2, y)
+        drawTextFast(G.standard_font, text, color(200, 200, 200, 255), (G.width - creation_window_width) div 2, y)
         let cursor_x = (G.width - creation_window_width) div 2 + cast[cint](text.len) * 10
         G.renderer.setDrawColor(200, 200, 200, 255)
         G.renderer.drawLine(cursor_x, (G.height - creation_window_height) div 2, cursor_x, (G.height - creation_window_height) div 2 + 20)
@@ -164,12 +169,12 @@ proc drawScreen*() =
             ## Option text
             let max_option_text_width = (creation_window_width div 10) - 5
             let text = if option.text.len < max_option_text_width: option.text else: option.text[^max_option_text_width .. ^1]
-            drawStandardSizeTextFast(cstring(text), color, (G.width - creation_window_width) div 2, y)
+            drawTextFast(G.standard_font, text, color, (G.width - creation_window_width) div 2, y)
 
             ## Little tildes for ~~aethestics~~
             if selected:
                 let length = max(10 - cast[cint](len(text)), 4)
-                drawStandardSizeTextFast(cstring("~".repeat(length)), color(178, 178, 178, 255), ((G.width + creation_window_width) div 2) - 10 * length, y)           
+                drawTextFast(G.standard_font, "~".repeat(length), color(178, 178, 178, 255), ((G.width + creation_window_width) div 2) - 10 * length, y)           
             
             ## Advance the line position
             y += 20
@@ -206,7 +211,7 @@ proc drawScreen*() =
         G.renderer.setDrawColor(68, 81, 87, 255)
         fillPaddedRoundedRect(padded(query_text_rect, 1))
 
-        drawStandardSizeTextFast(cstring(text), color(200, 200, 200, 255), (G.width - goto_window_width) div 2, y)
+        drawTextFast(G.standard_font, text, color(200, 200, 200, 255), (G.width - goto_window_width) div 2, y)
         let cursor_x = (G.width - goto_window_width) div 2 + cast[cint](text.len) * 10
         G.renderer.setDrawColor(200, 200, 200, 255)
         G.renderer.drawLine(cursor_x, (G.height - goto_window_height) div 2, cursor_x, (G.height - goto_window_height) div 2 + 20)
@@ -244,11 +249,11 @@ proc drawScreen*() =
             ## Option text
             let max_option_text_width = (goto_window_width div 10) - 5
             let text = if option.text.len < max_option_text_width: option.text else: option.text[^max_option_text_width .. ^1]
-            drawStandardSizeTextFast(cstring(text), color, (G.width - goto_window_width) div 2, y)
+            drawTextFast(G.standard_font, text, color, (G.width - goto_window_width) div 2, y)
 
             ## Little tildes for ~~aethestics~~
             let length = max(10 - cast[cint](len(text)), 4)
-            drawStandardSizeTextFast(cstring("~".repeat(length)), color(128, 128, 128, 255), ((G.width + goto_window_width) div 2) - 10 * length, y)           
+            drawTextFast(G.standard_font, "~".repeat(length), color(128, 128, 128, 255), ((G.width + goto_window_width) div 2) - 10 * length, y)           
             
             ## Advance the line position
             y += 20

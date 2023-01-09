@@ -37,6 +37,9 @@ proc updateWindowDimensions*() =
 
 
 ### Drawing helper procedures
+# proc setDrawColor(renderer: RendererPtr, color: Color): SDL_Return =
+#     renderer.setDrawColor()
+
 func padded*(rect: Rect, padding: cint): Rect =
     rect(rect[0] - padding, rect[1] - padding, rect[2] + 2 * padding, rect[3] + 2 * padding)
 

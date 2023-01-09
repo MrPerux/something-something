@@ -32,3 +32,10 @@ func hlsToRgb*(h, l, s: float): Color {. compiletime .} =
     return color(max(0, (rgb[0] * 255).round.toInt), max(0, (rgb[1] * 255).round.toInt), max(0, (rgb[2] * 255).round.toInt), 255)
 
 const whitestWhite* = color(255, 255, 255, 255)
+const greyedOutWhite* = color(212, 212, 212, 255)
+const brightYellow* = color(255, 215, 0, 255)
+const brightPurple* = color(218, 112, 214, 255)
+const dimYellow* = color(220, 220, 170, 255)
+const cactusGreen* = color(106, 153, 85, 255)
+const cursorGrey* = color(174, 175, 173, 255)
+const niceBlue* = color(86, 156, 214, 255)

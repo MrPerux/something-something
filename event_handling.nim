@@ -57,6 +57,11 @@ proc onInput(input: Input) =
             else:
                 G.focus_stack.add(FocusMode.GotoWindow)
 
+        ## Ctrl S -> Cycle Font
+        if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_S:
+            G.switchable_fonts.insert(G.switchable_fonts.pop, 0)
+            G.standard_font = G.switchable_fonts[0]
+
         ## Ctrl J -> Next Item
         if input.mod_ctrl and input.scancode == Scancode.SDL_SCANCODE_J:
             ## Creation Window

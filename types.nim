@@ -109,5 +109,17 @@ type EditableSetStatement* = ref object of Editable
 type FontInfo* = ref object
     texture*: TexturePtr
     glyph_size*: cint
+    glyph_baseline_y*: cint
     glyph_x_stride*: cint
     glyph_y_stride*: cint
+    glyph_atlas_width*: cint
+    glyph_atlas_height*: cint
+
+
+### Text Alignment
+type TextAlignment* = enum
+    Left
+    Center
+    Right
+const Top* = Left
+const Bottom* = Right

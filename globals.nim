@@ -49,6 +49,7 @@ type Globals* = object
 
     ## Fonts
     # standard_font*: TexturePtr
+    switchable_fonts*: seq[FontInfo]
     standard_font*: FontInfo
     fonts*: Table[cint, FontPtr]
 
