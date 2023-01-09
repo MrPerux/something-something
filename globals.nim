@@ -48,7 +48,8 @@ type Globals* = object
     current_slice*: EditableBody
 
     ## Fonts
-    texture_atlas_standard_size*: TexturePtr
+    # standard_font*: TexturePtr
+    standard_font*: FontInfo
     fonts*: Table[cint, FontPtr]
 
 var G* = Globals(

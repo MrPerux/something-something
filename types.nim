@@ -104,3 +104,10 @@ type EditableProcedureDefinition* = ref object of Editable
 type EditableSetStatement* = ref object of Editable
     variable*: EditableUnparsed ## TODO: Turn into an editable identifier
     value*: Editable
+
+### Font Info
+type FontInfo* = ref object
+    texture*: TexturePtr
+    glyph_size*: cint
+    glyph_x_stride*: cint
+    glyph_y_stride*: cint

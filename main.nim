@@ -4,6 +4,7 @@ import sdl_wrapper
 import drawing
 import event_handling
 import code_actions
+import text_rendering
 
 ## Library imports
 import math

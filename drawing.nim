@@ -5,6 +5,7 @@ import types
 import colors
 import autocomplete
 import editables
+import text_rendering
 
 ## Library imports
 import sdl2
