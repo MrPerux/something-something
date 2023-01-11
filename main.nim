@@ -1,9 +1,9 @@
 ## Local imports
 import globals
-import sdl_wrapper
 import drawing
-import event_handling
+import sdl_wrapper
 import code_actions
+import event_handling
 import text_rendering
 
 ## Library imports
@@ -13,6 +13,8 @@ import sdl2/ttf
 
 ### Initialize G
 addTodoProcedureAndSwitch()
+addUnparsedInTopLevel()
+updateWritingContext()
 
 ### Initialization and game loop
 proc main =

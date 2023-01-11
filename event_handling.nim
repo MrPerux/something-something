@@ -9,7 +9,9 @@ import slices
 
 ## Library imports
 import sdl2
+import std/tables
 import std/options
+import std/strutils
 import std/strformat
 
 {.experimental: "codeReordering".}
@@ -71,7 +73,7 @@ proc onInput(input: Input) =
             if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
                 let new_editable = maybeNextEditableLeaveSoUnparsedRightNow(G.optionally_selected_editable.get())
                 if new_editable.isSome:
-                    G.optionally_selected_editable = new_editable
+                    changeOptionallySelectedEditable(new_editable)
                     echo fmt"New editable: {new_editable.get()}"
 
         ## Ctrl K -> Previous Item
@@ -85,7 +87,7 @@ proc onInput(input: Input) =
             if G.focus_mode == FocusMode.Text and G.optionally_selected_editable.isSome:
                 let new_editable = maybePreviousEditableLeaveSoUnparsedRightNow(G.optionally_selected_editable.get())
                 if new_editable.isSome:
-                    G.optionally_selected_editable = new_editable
+                    changeOptionallySelectedEditable(new_editable)
                     echo fmt"New editable: {new_editable.get()}"
 
         ## Typing
@@ -106,33 +108,24 @@ proc onInput(input: Input) =
             case G.focus_mode
             of FocusMode.Text:
                 if G.optionally_selected_editable.isSome:
-                    var child = G.optionally_selected_editable.get()
-                    let parent = child.parent
-                    if parent of EditableBody:
-                        var body = cast[EditableBody](parent)
-                        let child_index = body.lines.find(child)
-                        var new_editable = initEditableUnparsed("")
-                        new_editable.parent = body
-                        body.lines.insert(new_editable, child_index + 1)
-                        G.optionally_selected_editable = some(cast[Editable](new_editable))
+                    handleNewline()
             of FocusMode.CreationWindow:
-                var should_clear_search_text_and_close_window = false
-                let creation_option = G.creation_window_selection_options[G.creation_window_selection_index]
-                case creation_option.text
-                of "proc":
-                    addTodoProcedureAndSwitch()
-                    should_clear_search_text_and_close_window = true
-                of "if then":
-                    addIfStatementAndSwitch()
-                    should_clear_search_text_and_close_window = true
-                of "comment (#)":
-                    addCommentAndSwitch()
-                    should_clear_search_text_and_close_window = true
-                else:
-                    discard
-                if should_clear_search_text_and_close_window:
-                    onTextChange("")
-                    discard G.focus_stack.pop()
+                let keyword_option = G.creation_window_selection_options[G.creation_window_selection_index]
+                handleKeywordOption(keyword_option)
+                onTextChange("")
+                discard G.focus_stack.pop()
+                # case creation_option.text
+                # of "proc":
+                #     addTodoProcedureAndSwitch()
+                #     should_clear_search_text_and_close_window = true
+                # of "if then":
+                #     addIfStatementAndSwitch()
+                #     should_clear_search_text_and_close_window = true
+                # of "comment (#)":
+                #     addCommentAndSwitch()
+                #     should_clear_search_text_and_close_window = true
+                # else:
+                #     discard
             of FocusMode.GotoWindow:
                 discard
             of FocusMode.Search:
@@ -178,6 +171,33 @@ proc onTextChange*(new_text: string) =
         if G.optionally_selected_editable.isSome and G.optionally_selected_editable.get() of EditableUnparsed:
             var editable_unparsed = cast[EditableUnparsed](G.optionally_selected_editable.get())
             editable_unparsed.value = new_text
+            assert G.optional_writing_context.isSome
+
+            ## Keyword
+            if G.optional_writing_context.get().keywords.contains(new_text):
+                let thingy = G.optional_writing_context.get().keywords[new_text]
+                let keyword_option = (new_text, thingy[0], thingy[1])
+                handleKeywordOption(keyword_option)
+            
+            ## Operator
+            for operator in G.optional_writing_context.get().operators.keys:
+                if new_text.endsWith(operator):
+                    let thingy = G.optional_writing_context.get().operators[operator]
+                    let keyword_option = (new_text, thingy[0], thingy[1])
+                    let lhs_string = new_text.substr(0, new_text.len - operator.len - 1)
+                    if lhs_string.len > 0:
+                        let lhs = initEditableUnparsed(lhs_string) ## TODO: Parse into valid identifier?
+                        let rhs = initEditableUnparsed(operator) ## TODO: Parse into valid identifier?
+                        var wrapper = initEditableExpressionWithSuffixWriting(cast[Editable](lhs), rhs)
+                        replaceWith(G.optionally_selected_editable.get(), cast[Editable](wrapper))
+                        changeOptionallySelectedEditable(some(cast[Editable](rhs)))
+                        echo "Just did crazy splitting stuff!"
+                    echo "Doing handleKeywordOption for operator"
+                    echo "current selected: " & $G.optionally_selected_editable.get()
+                    echo "its parent: " & $G.optionally_selected_editable.get().parent
+                    echo "and its parent: " & $G.optionally_selected_editable.get().parent.parent
+                    handleKeywordOption(keyword_option)
+                    break
 
     of FocusMode.CreationWindow:
         let last_selection = G.creation_window_selection_options[G.creation_window_selection_index]
@@ -185,7 +205,7 @@ proc onTextChange*(new_text: string) =
         remakeCreationWindowSelectionOptions()
         var maybe_new_index: cint = -1
         for i in 0 ..< G.creation_window_selection_options.len:
-            if G.creation_window_selection_options[i].text == last_selection.text:
+            if G.creation_window_selection_options[i] == last_selection:
                 maybe_new_index = cast[cint](i)
         if maybe_new_index == -1:
             G.creation_window_selection_index = min(cast[cint](G.creation_window_selection_options.len) - 1, G.creation_window_selection_index)

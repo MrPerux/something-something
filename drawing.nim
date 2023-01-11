@@ -140,19 +140,19 @@ proc drawScreen*() =
         y += 30
 
         ## Options text
-        for option in G.creation_window_selection_options:
+        for i, (option_match, option_keyword, option_description) in G.creation_window_selection_options:
             ## Check if selected
-            let selected = option == G.creation_window_selection_options[G.creation_window_selection_index]
+            let selected = i == G.creation_window_selection_index
 
             ## Color selection
             let color =
                 if selected:
                     whitestWhite
                 else:
-                    case option.kind
-                    of Todo:
+                    case option_keyword
+                    of Proc:
                         color(110, 235, 140, 255)
-                    of Keyword:
+                    of If:
                         color(235, 110, 140, 255)
                     else:
                         color(230, 230, 230, 255)
@@ -164,13 +164,13 @@ proc drawScreen*() =
             
             ## Option text
             let max_option_text_width = (creation_window_width div 10) - 5
-            let text = if option.text.len < max_option_text_width: option.text else: option.text[^max_option_text_width .. ^1]
+            let text = if option_match.len < max_option_text_width: option_match else: option_match[^max_option_text_width .. ^1]
             drawTextFast(G.standard_font, text, color, (G.width - creation_window_width) div 2, y)
 
             ## Little tildes for ~~aethestics~~
             if selected:
                 let length = max(10 - cast[cint](len(text)), 4)
-                drawTextFast(G.standard_font, "~".repeat(length), color(178, 178, 178, 255), ((G.width + creation_window_width) div 2) - 10 * length, y)           
+                drawTextFastAlign(G.standard_font, option_description.substr(max(0, option_description.len - 1 - length)), color(178, 178, 178, 255), ((G.width + creation_window_width) div 2), y, Right, Top)           
             
             ## Advance the line position
             y += 20

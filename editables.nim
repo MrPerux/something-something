@@ -14,6 +14,7 @@ method maybeFirst*(x: Editable): Option[Editable] {.base.} = discard
 method maybeLast*(x: Editable): Option[Editable] {.base.} = discard
 method maybeNextEditableOfChild*(x: Editable, child: Editable): Option[Editable] {.base.} = discard
 method maybePreviousEditableOfChild*(x: Editable, child: Editable): Option[Editable] {.base.} = discard
+method replaceChild*(x: Editable, child: Editable, new_child: Editable) {.base.} = assert false
 proc maybeNextEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable] =
     var current = x
     while true:
@@ -37,6 +38,7 @@ proc maybeNextEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable] =
                 current = maybe_sibling.get()
                 break
             current = current.parent
+proc replaceWith*(x: Editable, new_x: Editable) = x.parent.replaceChild(x, new_x)
 
 proc maybePreviousEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable] =
     var current = x
@@ -63,6 +65,28 @@ proc maybePreviousEditableLeaveSoUnparsedRightNow*(x: Editable): Option[Editable
             current = current.parent
 
 
+## Literal
+method `$`*(x: EditableLiteral): string =
+    fmt"literal<{x.value}>"
+
+method textyIterator*(x: EditableLiteral, texties: var seq[Texty]) =
+    texties.add(Texty(text: "glob::", kind: Punctuation))
+    texties.add(Texty(text: x.value, kind: Literal))
+
+method maybeFirst*(x: EditableLiteral): Option[Editable] =
+    none[Editable]()
+
+method maybeLast*(x: EditableLiteral): Option[Editable] =
+    none[Editable]()
+
+method maybeNextEditableOfChild*(x: EditableLiteral, child: Editable): Option[Editable] = discard
+method maybePreviousEditableOfChild*(x: EditableLiteral, child: Editable): Option[Editable] = discard
+method replaceChild*(x: EditableLiteral, child: Editable, new_child: Editable) = assert false
+
+proc initEditableLiteral*(value: string): EditableLiteral =
+    result = EditableLiteral(value: value)
+
+
 ## Unparsed
 method `$`*(x: EditableUnparsed): string =
     fmt"unparsed<{x.value}>"
@@ -81,9 +105,67 @@ method maybeLast*(x: EditableUnparsed): Option[Editable] =
 
 method maybeNextEditableOfChild*(x: EditableUnparsed, child: Editable): Option[Editable] = discard
 method maybePreviousEditableOfChild*(x: EditableUnparsed, child: Editable): Option[Editable] = discard
+method replaceChild*(x: EditableUnparsed, child: Editable, new_child: Editable) = assert false
 
 proc initEditableUnparsed*(value: string): EditableUnparsed =
     result = EditableUnparsed(value: value)
+
+
+## Expression with suffix writing
+method `$`*(x: EditableExpressionWithSuffixWriting): string =
+    fmt"expression_with_suffix_writing<{x.expression}, {x.suffix_unparsed}>"
+
+method textyIterator*(x: EditableExpressionWithSuffixWriting, texties: var seq[Texty]) =
+    x.expression.textyIterator(texties)
+    x.suffix_unparsed.textyIterator(texties)
+
+method maybeFirst*(x: EditableExpressionWithSuffixWriting): Option[Editable] =
+    some(x.expression)
+
+method maybeLast*(x: EditableExpressionWithSuffixWriting): Option[Editable] =
+    some(cast[Editable](x.suffix_unparsed))
+
+method maybeNextEditableOfChild*(x: EditableExpressionWithSuffixWriting, child: Editable): Option[Editable] = assert false: "not implemented"
+method maybePreviousEditableOfChild*(x: EditableExpressionWithSuffixWriting, child: Editable): Option[Editable] = assert false: "not implemented"
+method replaceChild*(x: EditableExpressionWithSuffixWriting, child: Editable, new_child: Editable) =
+    if child == x.expression:
+        x.expression = new_child
+    else:
+        assert child == x.suffix_unparsed
+        assert new_child of EditableUnparsed
+        x.suffix_unparsed = cast[EditableUnparsed](new_child)
+
+proc initEditableExpressionWithSuffixWriting*(expression: Editable, suffix_unparsed: EditableUnparsed): EditableExpressionWithSuffixWriting =
+    result = EditableExpressionWithSuffixWriting(expression: expression, suffix_unparsed: suffix_unparsed)
+    suffix_unparsed.parent = result
+    expression.parent = result
+
+
+## Comment
+method `$`*(x: EditableComment): string =
+    fmt"comment<{x.unparsed}>"
+
+method textyIterator*(x: EditableComment, texties: var seq[Texty]) =
+    texties.add(Texty(text: "##", kind: Literal))
+    
+    if G.optionally_selected_editable == some(cast[Editable](x.unparsed)):
+        texties.add(Texty(text: x.unparsed.value, kind: CurrentlyTyping, currently_typing_kind: Literal))
+    else:
+        texties.add(Texty(text: x.unparsed.value, kind: Literal))
+
+method maybeFirst*(x: EditableComment): Option[Editable] =
+    some(cast[Editable](x.unparsed))
+
+method maybeLast*(x: EditableComment): Option[Editable] =
+    some(cast[Editable](x.unparsed))
+
+method maybeNextEditableOfChild*(x: EditableComment, child: Editable): Option[Editable] = discard
+method maybePreviousEditableOfChild*(x: EditableComment, child: Editable): Option[Editable] = discard
+method replaceChild*(x: EditableComment, child: Editable, new_child: Editable) = assert false
+
+proc initEditableComment*(unparsed: EditableUnparsed): EditableComment =
+    result = EditableComment(unparsed: unparsed)
+    unparsed.parent = result
 
 
 ## Parameters
@@ -118,6 +200,9 @@ method maybePreviousEditableOfChild*(x: EditableParameters, child: Editable): Op
     let index = x.parameters_unparsed.find(cast[EditableUnparsed](child)) - 1
     if index >= 0:
         result = some(cast[Editable](x.parameters_unparsed[index]))
+
+method replaceChild*(x: EditableParameters, child: Editable, new_child: Editable) =
+    assert false
 
 proc initEditableParameters*(parameters_unparsed: seq[EditableUnparsed]): EditableParameters =
     result = EditableParameters(parameters_unparsed: parameters_unparsed)
@@ -154,6 +239,11 @@ method maybePreviousEditableOfChild*(x: EditableBody, child: Editable): Option[E
     let index = x.lines.find(child) - 1
     if index >= 0:
         result = some(x.lines[index])
+
+method replaceChild*(x: EditableBody, child: Editable, new_child: Editable) =
+    let index = x.lines.find(child)
+    x.lines[index] = new_child
+    new_child.parent = x
 
 proc initEditableBody*(lines: seq[Editable]): EditableBody =
     result = EditableBody(lines: lines)
@@ -192,6 +282,11 @@ method maybePreviousEditableOfChild*(x: EditableProcedureDefinition, child: Edit
     elif child of EditableBody:
         result = some(cast[Editable](x.parameters))
 
+method replaceChild*(x: EditableProcedureDefinition, child: Editable, new_child: Editable) =
+    if child == x.name: x.name = cast[EditableUnparsed](new_child)
+    elif child == x.parameters: x.parameters = cast[EditableParameters](new_child)
+    else: x.body = cast[EditableBody](new_child)
+    new_child.parent = x
 
 proc initEditableProcedureDefinition*(name: EditableUnparsed, parameters: EditableParameters, body: EditableBody): EditableProcedureDefinition =
     result = EditableProcedureDefinition(name: name, parameters: parameters, body: body)
@@ -226,7 +321,18 @@ method maybePreviousEditableOfChild*(x: EditableSetStatement, child: Editable): 
     if child == x.value:
         result = some(cast[Editable](x.variable))
 
-proc initEditableProcedureDefinition*(variable: EditableUnparsed, value: Editable): EditableSetStatement =
+method replaceChild*(x: EditableSetStatement, child: Editable, new_child: Editable) =
+    assert false
+
+proc initEditableSetStatement*(variable: EditableUnparsed, value: Editable): EditableSetStatement =
     result = EditableSetStatement(variable: variable, value: value)
     variable.parent = result
     value.parent = result
+
+
+# ## Editables via templates
+# type CodeNode* = ref object of RootObj
+#     parent: Option[CodeNode]
+
+
+

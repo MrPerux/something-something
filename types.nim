@@ -2,6 +2,8 @@
 
 ## Library imports
 import sdl2
+import sugar
+import std/tables
 import std/strformat
 
 {.experimental: "codeReordering".}
@@ -95,8 +97,18 @@ type Filter* = object
 type Editable* = ref object of RootObj
     parent*: Editable
 
+type EditableLiteral* = ref object of Editable
+    value*: string
+
 type EditableUnparsed* = ref object of Editable
     value*: string
+
+type EditableExpressionWithSuffixWriting* = ref object of Editable
+    expression*: Editable
+    suffix_unparsed*: EditableUnparsed
+
+type EditableComment* = ref object of Editable
+    unparsed*: EditableUnparsed
     
 type EditableParameters* = ref object of Editable
     parameters_unparsed*: seq[EditableUnparsed] ## TODO: Turn into optionally typed identifiers
@@ -113,6 +125,22 @@ type EditableSetStatement* = ref object of Editable
     variable*: EditableUnparsed ## TODO: Turn into an editable identifier
     value*: Editable
 
+
+### Writing Context
+type WritingKeyword* = enum
+    Proc
+    If
+    Comment
+    Set
+    FillerSoThingWontBeEmpty
+
+type WritingContext* = object
+    # keywords*: Table[string, (string, string)]
+    keywords*: Table[string, (WritingKeyword, string)]
+    operators*: Table[string, (WritingKeyword, string)]
+    allow_newline_make_new_unparsed_in_ancestor_body*: bool
+
+type KeywordOption* = (string, WritingKeyword, string)
 
 ### Font Info
 type FontInfo* = ref object

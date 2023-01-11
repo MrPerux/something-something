@@ -34,7 +34,7 @@ type Globals* = object
     ## Creation window
     creation_window_search*: string
     creation_window_selection_index*: cint
-    creation_window_selection_options*: seq[Texty]
+    creation_window_selection_options*: seq[KeywordOption]
 
     ## Goto window
     goto_window_search*: string
@@ -43,6 +43,7 @@ type Globals* = object
     
     ## Editables
     optionally_selected_editable*: Option[Editable]
+    optional_writing_context*: Option[WritingContext]
     all_editables*: seq[Editable]
     current_slice*: EditableBody
     current_slice_filter*: Filter

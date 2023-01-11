@@ -9,6 +9,7 @@ import drawing_helper
 import sdl2
 import sdl2/ttf
 import std/tables
+import std/strutils
 
 ### Text Rendering
 # const CODE_FONT_PATH = "assets/Hack Regular Nerd Font Complete.ttf"
@@ -127,6 +128,12 @@ proc initTextureAtlasStandardSize*() =
     # )
     # G.standard_font = easyMakeFont("assets/Hack Regular Nerd Font Complete.ttf", 16)
 
+proc drawHalfSizeHexCharacter(font: FontInfo, c: char, x: cint, y: cint) =
+    var source_rect = rect(cast[cint](c) * font.glyph_atlas_width, 0, font.glyph_atlas_width, font.glyph_atlas_height)
+    var destination_rect = rect(x, y, font.glyph_atlas_width, font.glyph_atlas_height div 2)
+    G.renderer.copy(font.texture, addr source_rect, addr destination_rect)
+    discard
+
 proc drawTextFast*(font: FontInfo, text: string, color: Color, x: cint, y: cint) =
     ## Set color
     sdlFailIf setTextureColorMod(font.texture, color[0], color[1], color[2]) != SdlSuccess:
@@ -138,7 +145,12 @@ proc drawTextFast*(font: FontInfo, text: string, color: Color, x: cint, y: cint)
     ## Blit every character from font texture atlas
     var current_x = x
     for c in text:
-        if c <= ' ' or cast[cint](c) >= 127:
+        if c < ' ' or cast[cint](c) >= 127:
+            ## Draw hex code in box
+            drawOutlinedRect(color, rect(current_x, y, font.glyph_x_stride, font.glyph_size))
+            let hex_code = cast[int](c).toHex(2)
+            drawHalfSizeHexCharacter(font, hex_code[0], current_x, y)
+            drawHalfSizeHexCharacter(font, hex_code[1], current_x, y + font.glyph_size div 2)
             current_x += font.glyph_x_stride
             continue
         var source_rect = rect(cast[cint](c) * font.glyph_atlas_width, 0, font.glyph_atlas_width, font.glyph_atlas_height)
