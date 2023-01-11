@@ -5,8 +5,15 @@ import types
 import os
 import sdl2
 import sdl2/ttf
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
 import std/tables
+import std/strutils
 import std/options
+import std/strformat
+import system/dollars
 
 {.experimental: "codeReordering".}
 

@@ -1,13 +1,19 @@
 ## Local imports
-import globals
-import types
+import ../globals
+import ../types
 import editables
 
 ## Library imports
+import std/algorithm
+import system/dollars
+
+## Standard imports
+{. warning[UnusedImport]:off .}
 import sugar
 import std/tables
+import std/strutils
 import std/options
-import std/algorithm
+import std/strformat
 import system/dollars
 
 {.experimental: "codeReordering".}

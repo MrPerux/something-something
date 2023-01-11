@@ -1,17 +1,24 @@
 ## Local imports
-import globals
+import ../globals
 import sdl_wrapper
-import types
+import ../types
 import colors
-import autocomplete
-import editables
+import ../language/autocomplete
+import ../language/editables
 import text_rendering
 import drawing_helper
 
 ## Library imports
 import sdl2
-import std/strformat
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
+import std/tables
 import std/strutils
+import std/options
+import std/strformat
+import system/dollars
 
 ### Draw everything
 proc drawScreen*() =

@@ -1,18 +1,23 @@
 ## Local imports
-import globals
-import types
+import ../globals
+import ../types
 import sdl_wrapper
-import autocomplete
-import code_actions
-import editables
-import slices
+import ../language/autocomplete
+import ../language/code_actions
+import ../language/editables
+import ../language/slices
 
 ## Library imports
 import sdl2
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
 import std/tables
-import std/options
 import std/strutils
+import std/options
 import std/strformat
+import system/dollars
 
 {.experimental: "codeReordering".}
 

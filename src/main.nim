@@ -1,15 +1,25 @@
 ## Local imports
 import globals
-import drawing
-import sdl_wrapper
-import code_actions
-import event_handling
-import text_rendering
+import gui/drawing
+import gui/sdl_wrapper
+import gui/event_handling
+import gui/text_rendering
+import language/code_actions
 
 ## Library imports
 import math
 import sdl2
 import sdl2/ttf
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
+import std/tables
+import std/strutils
+import std/options
+import std/strformat
+import system/dollars
+
 
 ### Initialize G
 addTodoProcedureAndSwitch()

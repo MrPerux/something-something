@@ -1,11 +1,18 @@
 ## Local imports
-import types
-import globals
+import ../types
+import ../globals
 import editables
 
 ## Library imports
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
+import std/tables
 import std/strutils
 import std/options
+import std/strformat
+import system/dollars
 
 
 ### Slices

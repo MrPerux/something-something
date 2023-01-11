@@ -1,15 +1,22 @@
 ## Local imports
-import types
+import ../types
 import colors
-import globals
+import ../globals
 import sdl_wrapper
 import drawing_helper
 
 ## Library imports
 import sdl2
 import sdl2/ttf
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
 import std/tables
 import std/strutils
+import std/options
+import std/strformat
+import system/dollars
 
 ### Text Rendering
 # const CODE_FONT_PATH = "assets/Hack Regular Nerd Font Complete.ttf"

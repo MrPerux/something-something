@@ -4,6 +4,15 @@
 import sdl2
 import math
 
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
+import std/tables
+import std/strutils
+import std/options
+import std/strformat
+import system/dollars
+
 ### Color convertion functions
 func hlsHelper(m1 : float, m2 : float, hue : float): float =
     var hue2 : float = hue mod 1.0

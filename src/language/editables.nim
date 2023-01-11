@@ -1,11 +1,17 @@
 ## Local imports
-import globals
-import types
+import ../globals
+import ../types
 
 ## Library imports
-import std/options
+
+## Standard imports
+{. warning[UnusedImport]:off .}
+import sugar
+import std/tables
 import std/strutils
+import std/options
 import std/strformat
+import system/dollars
 
 ### Editable Code
 method `$`*(x: Editable): string {.base.} = discard
