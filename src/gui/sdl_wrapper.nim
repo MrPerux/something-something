@@ -44,11 +44,6 @@ proc updateWindowDimensions*() =
     G.window.raiseWindow
 
 
-### Drawing helper procedures
-# proc setDrawColor(renderer: RendererPtr, color: Color): SDL_Return =
-#     renderer.setDrawColor()
-
-
 ### Input Handling
 const
     MOD_SHIFT = KMOD_LSHIFT or KMOD_RSHIFT

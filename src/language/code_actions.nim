@@ -5,7 +5,6 @@ import editables
 
 ## Library imports
 import std/algorithm
-import system/dollars
 
 ## Standard imports
 {. warning[UnusedImport]:off .}
@@ -102,7 +101,7 @@ proc updateWritingContext*() =
         G.optional_writing_context = some(getWritingContext(G.optionally_selected_editable.get()))
 
 proc handleKeywordOption*(option: KeywordOption) =
-    let (name, keyword, description) = option
+    let (_, keyword, _) = option
     
     let presumably_unparsed = G.optionally_selected_editable.get()
     assert presumably_unparsed of EditableUnparsed
@@ -131,10 +130,7 @@ proc handleKeywordOption*(option: KeywordOption) =
         
         else:
             replaceWith(presumably_unparsed, new_editable)
-        # echo "Doing code action comment"
-        # echo "The tree before: " & $G.current_slice
         changeOptionallySelectedEditable(some(cast[Editable](new_editable.unparsed)))
-        # echo "The tree after: " & $G.current_slice
     of Set:
         let new_editable = initEditableUnparsed("TODO")
         replaceWith(presumably_unparsed, new_editable)

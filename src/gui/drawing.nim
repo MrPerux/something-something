@@ -23,7 +23,7 @@ import system/dollars
 ### Draw everything
 proc drawScreen*() =
     ## Background
-    G.renderer.setDrawColor 8, 21, 27, 255 ## Dark cyan
+    G.renderer.setDrawColor(8, 21, 27, 255) ## Dark cyan
     G.renderer.clear()
 
     ## Texties
@@ -107,7 +107,7 @@ proc drawScreen*() =
             G.width - (G.width div 2),
             30)
         G.renderer.fillRect(search_bar_rect)
-        drawText(16, fmt"Search: '{G.current_search_term}'", whitestWhite, G.width div 2 + ((30 - 16) div 2), (30 - 16) div 2)
+        drawTextFast(G.standard_font, fmt"Search: '{G.current_search_term}'", whitestWhite, G.width div 2 + ((30 - 16) div 2), (30 - 16) div 2)
 
     ## Optional creation window
     if G.focus_mode == FocusMode.CreationWindow:

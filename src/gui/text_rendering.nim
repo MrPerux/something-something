@@ -19,11 +19,11 @@ import std/strformat
 import system/dollars
 
 ### Text Rendering
-# const CODE_FONT_PATH = "assets/Hack Regular Nerd Font Complete.ttf"
 const CODE_FONT_PATH = "assets/Consolas Monospace Font Regular.ttf"
+# const CODE_FONT_PATH = "assets/Hack Regular Nerd Font Complete.ttf"
 # const CODE_FONT_PATH = "assets/Consolas Monospace Font Bold.ttf"
 
-proc drawText(font: FontPtr, text: string, color: Color, x: cint, y: cint) =
+proc drawTextWithoutAtlas(font: FontPtr, text: string, color: Color, x: cint, y: cint) =
     if text.len == 0:
         return
     let
@@ -41,16 +41,17 @@ proc drawText(font: FontPtr, text: string, color: Color, x: cint, y: cint) =
     )
     G.renderer.copy texture, nil, addr r
 
-proc drawText*(font_size: cint, text: string, color: Color, x: cint, y: cint) =
+proc drawTextWithoutAtlas*(font_path: string, font_size: cint, text: string, color: Color, x: cint, y: cint) =
     if not G.fonts.hasKey(font_size):
-        G.fonts[font_size] = ttf.openFont(CODE_FONT_PATH, font_size)
+        G.fonts[font_size] = ttf.openFont(font_path, font_size)
         sdlFailIf G.fonts[font_size].isNil: "font could not be created"
-    drawText(G.fonts[font_size], text, color, x, y)
+    drawTextWithoutAtlas(G.fonts[font_size], text, color, x, y)
+
 
 ## Optimized Text Rendering with Texture Atlas
 proc initFontInfo*(font_path: string, glyph_size: cint, glyph_x_stride: cint, glyph_y_stride: cint, glyph_atlas_width: cint, glyph_atlas_height: cint): FontInfo =
     ## Load font
-    let font = ttf.openFont(CODE_FONT_PATH, glyph_size)
+    let font = ttf.openFont(font_path, glyph_size)
     sdlFailIf font.isNil: "font could not be created"
     G.fonts[16] = font
 
@@ -91,49 +92,12 @@ proc easyMakeFont*(font_path: string, size_in_pixels: cint): FontInfo =
         glyph_atlas_height = size_in_pixels,
     )
 
-# proc proc2(param1, param2) =
-#     Whoop whoop
-#     Noice
-
 proc initTextureAtlasStandardSize*() =
-    # G.standard_font = initFontInfo(
-    #     font_path = CODE_FONT_PATH,
-    #     glyph_size = 22,
-    #     glyph_x_stride = 12,
-    #     glyph_y_stride = 22,
-    #     glyph_atlas_width = 20,
-    #     glyph_atlas_height = 40,
-    # )
-    # G.standard_font = initFontInfo(
-    #     font_path = "assets/Hack Regular Nerd Font Complete.ttf",
-    #     glyph_size = 20,
-    #     glyph_x_stride = 11,
-    #     glyph_y_stride = 20,
-    #     glyph_atlas_width = 100,
-    #     glyph_atlas_height = 160,
-    # )
-    # G.standard_font = initFontInfo(
-    #     font_path = CODE_FONT_PATH,
-    #     glyph_size = 20,
-    #     glyph_x_stride = 11,
-    #     glyph_y_stride = 28,
-    #     glyph_atlas_width = 100,
-    #     glyph_atlas_height = 160,
-    # )
     G.switchable_fonts = @[
         easyMakeFont(CODE_FONT_PATH, 20),
         easyMakeFont(CODE_FONT_PATH, 14),
     ]
     G.standard_font = G.switchable_fonts[0]
-    # G.standard_font = initFontInfo(
-    #     font_path = CODE_FONT_PATH,
-    #     glyph_size = 14,
-    #     glyph_x_stride = 8,
-    #     glyph_y_stride = 19,
-    #     glyph_atlas_width = 100,
-    #     glyph_atlas_height = 160,
-    # )
-    # G.standard_font = easyMakeFont("assets/Hack Regular Nerd Font Complete.ttf", 16)
 
 proc drawHalfSizeHexCharacter(font: FontInfo, c: char, x: cint, y: cint) =
     var source_rect = rect(cast[cint](c) * font.glyph_atlas_width, 0, font.glyph_atlas_width, font.glyph_atlas_height)
@@ -146,6 +110,7 @@ proc drawTextFast*(font: FontInfo, text: string, color: Color, x: cint, y: cint)
     sdlFailIf setTextureColorMod(font.texture, color[0], color[1], color[2]) != SdlSuccess:
         "Cannot set texture color mod for colored text rendering"
     
+    # ## Debug drawing
     # drawFilledRect(brightYellow, rect(x, y, font.glyph_x_stride * cast[cint](text.len), font.glyph_size))
     # drawFilledRect(brightPurple, rect(x, y + font.glyph_baseline_y, font.glyph_x_stride * cast[cint](text.len), font.glyph_size - font.glyph_baseline_y))
 
@@ -165,15 +130,6 @@ proc drawTextFast*(font: FontInfo, text: string, color: Color, x: cint, y: cint)
         G.renderer.copy(font.texture, addr source_rect, addr destination_rect)
         current_x += font.glyph_x_stride
 
-# proc drawTextFastCenteredVertically*(font: FontInfo, text: string, color: Color, x: cint, y: cint) =
-#     drawTextFast(font, text, color, x, y - font.glyph_size div 2)
-
-# proc drawTextFastCenteredHortizontally*(font: FontInfo, text: string, color: Color, x: cint, y: cint) =
-#     drawTextFast(font, text, color, x - font.glyph_x_stride * cast[cint](text.len) div 2, y)
-
-# proc drawTextFastCenteredBoth*(font: FontInfo, text: string, color: Color, x: cint, y: cint) =
-#     drawTextFast(font, text, color, x - font.glyph_x_stride * cast[cint](text.len) div 2, y - font.glyph_size div 2)
-
 proc drawTextFastAlign*(font: FontInfo, text: string, color: Color, x: cint, y: cint, align_x: static[TextAlignment], align_y: static[TextAlignment]) {.inline.} =
     let xx = case align_x
         of Left: x
@@ -183,9 +139,5 @@ proc drawTextFastAlign*(font: FontInfo, text: string, color: Color, x: cint, y: 
         of Top: y
         of Center: y - font.glyph_size div 2 + font.glyph_size div 10
         of Bottom: y - font.glyph_size
-    
-    # G.renderer.setDrawColor(brightPurple)
-    # var below_bar_rect = rect(
-    #     xx, yy, font.glyph_x_stride * cast[cint](text.len), font.glyph_size)
-    # G.renderer.fillRect(below_bar_rect)
+
     drawTextFast(font, text, color, xx, yy)
