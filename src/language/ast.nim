@@ -3,7 +3,6 @@ import ../globals
 import ../types
 
 ## Library imports
-import sdl2
 
 ## Standard imports
 {. warning[UnusedImport]:off .}

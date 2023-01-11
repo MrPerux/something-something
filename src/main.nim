@@ -1,10 +1,9 @@
 ## Local imports
 import globals
 import gui/drawing
-import gui/sdl_wrapper
+import gui/lib_sdl
 import gui/event_handling
 import gui/text_rendering
-import language/code_actions
 
 ## Library imports
 import math
@@ -21,10 +20,8 @@ import std/strformat
 import system/dollars
 
 
-### Initialize G
-addTodoProcedureAndSwitch()
-addUnparsedInTopLevel()
-updateWritingContext()
+### Initialize global state
+
 
 ### Initialization and game loop
 proc main =

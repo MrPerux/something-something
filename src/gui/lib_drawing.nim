@@ -1,7 +1,7 @@
 ## Local imports
 import ../globals
 import ../types
-import sdl_wrapper
+import lib_sdl
 import colors
 
 ## Library imports

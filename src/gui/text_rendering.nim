@@ -2,8 +2,8 @@
 import ../types
 import colors
 import ../globals
-import sdl_wrapper
-import drawing_helper
+import lib_sdl
+import lib_drawing
 
 ## Library imports
 import sdl2
