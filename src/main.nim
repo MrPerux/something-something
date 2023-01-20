@@ -1,11 +1,14 @@
 ## Local imports
 import globals
+import types
 import gui/drawing
 import gui/lib_sdl
 import gui/event_handling
 import gui/text_rendering
+import language/ast
 
 ## Library imports
+import os
 import math
 import sdl2
 import sdl2/ttf
@@ -21,7 +24,11 @@ import system/dollars
 
 
 ### Initialize global state
-
+G = Globals(
+    running: true,
+    is_screen_maximized: fileExists("runtime/maximized_mode.option"),
+    focus_stack: @[FocusMode.Text],
+)
 
 ### Initialization and game loop
 proc main =

@@ -2,7 +2,6 @@
 import types
 
 ## Library imports
-import os
 import sdl2
 import sdl2/ttf
 
@@ -44,13 +43,7 @@ type Globals* = object
     fonts*: Table[cint, FontPtr]
 
 
-var G* = Globals(
-    running: true,
-    is_screen_maximized: fileExists("runtime/maximized_mode.option"),
-    focus_stack: @[FocusMode.Text],
-    current_search_term: "poodles",
-)
-
+var G*: Globals
 
 func focus_mode*(g: Globals): FocusMode =
     g.focus_stack[^1]
